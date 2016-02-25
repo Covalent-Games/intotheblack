@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using Covalent.Data;
 
 
 /// <summary>
@@ -9,6 +10,7 @@ using System;
 [Serializable]
 public class GameStateData {
 
+	private Guid _selectedSystem;
 	public static Guid SelectedSystem;
 
 	public void Save() {

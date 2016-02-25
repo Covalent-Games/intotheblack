@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using System.IO;
 
-public class StarMapCamerController : MonoBehaviour {
+public class StarMapCameraController : MonoBehaviour {
 
 	private Vector3 _cameraVelocity = Vector3.zero;
 
