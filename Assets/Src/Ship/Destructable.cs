@@ -48,6 +48,7 @@ public class Destructable : MonoBehaviour {
 			GameObject.FindGameObjectWithTag("GameManager").GetComponent<OverlayUI>().DisplayGameOverText();
 			GameManager.GameOver();
 		} else {
+			// Each kill brings hostility down by 0.75% (each enemy is = 1% of total hostility)
 			StarSystemData.StarSystemLoaded.Hostility -= 0.0075f;
 			GameManager.PlayerExperience += MaxHealth;
 			if (GameManager.ActiveEnemies.Contains(gameObject)) {

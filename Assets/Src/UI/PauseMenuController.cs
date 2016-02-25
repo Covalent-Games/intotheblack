@@ -46,6 +46,7 @@ public class PauseMenuController : MonoBehaviour {
 
 		//TODO: Save the game.
 		Time.timeScale = 1;
+		StarSystemData.SaveStarMapToFile();
 		Application.LoadLevel("StarClusterMap");
 	}
 

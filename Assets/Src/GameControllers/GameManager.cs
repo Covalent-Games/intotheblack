@@ -185,6 +185,7 @@ public class GameManager : MonoBehaviour {
 
 			yield return null;
 		}
+		StarSystemData.StarSystemLoaded.Hostility = 0f;
 		_overlayUI.DisplayMessage("Well done. This sector has been defended. Carry on, Captain.");
 	}
 
