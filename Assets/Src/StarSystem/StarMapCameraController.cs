@@ -5,29 +5,26 @@ using System.IO;
 
 public class StarMapCameraController : MonoBehaviour {
 
+	public static bool CameraMoving = false;
+
 	private Vector3 _cameraVelocity = Vector3.zero;
 
 	void Start() {
 
-		//TODO: This is the wrong file to check. The star map doesn't hold player location.
-		if (File.Exists(FilePaths.StarMapPath)) {
-			SetCameraToCurrentSystem();
+		if (GameStateData.State.PlayerOccupiedSystem != Guid.Empty) {
+			SetCameraToCurrentSystem(StarSystemData.StartSystemMapTable[GameStateData.State.PlayerOccupiedSystem]);
 		} else {
 			MoveCamToHome();
 		}
 	}
 
-	private void SetCameraToCurrentSystem() {
+	private void SetCameraToCurrentSystem(StarSystemData system) {
 
 		//TODO: StarSystemLoaded isn't currently persistent across saves. Needs to be saved in GameData still.
 		Vector3 newCamPos;
-		if (StarSystemData.StarSystemLoaded != null) {
-			newCamPos = StarSystemData.StarSystemLoaded.GetPosition();
-			FindObjectOfType<StarSystemInfoDisplay>().SetTargettedSystemInfo(StarSystemData.StarSystemLoaded); 
-		} else {
-			newCamPos = StarSystemData.PlayerHome.GetPosition();
-			FindObjectOfType<StarSystemInfoDisplay>().SetTargettedSystemInfo(StarSystemData.PlayerHome);
-		}
+
+		newCamPos = system.GetPosition();
+		FindObjectOfType<StarSystemInfoDisplay>().SetTargettedSystemInfo(system); 
 		newCamPos.z = -10;
 		Camera.main.transform.position = newCamPos;
 	}
@@ -45,7 +42,7 @@ public class StarMapCameraController : MonoBehaviour {
 
 	private IEnumerator MoveCamToHomeRoutine(Vector3 destination) {
 
-		StarSystemMapPoint.CameraMoving = true;
+		CameraMoving = true;
 
 		yield return new WaitForSeconds(2f);
 
@@ -63,8 +60,36 @@ public class StarMapCameraController : MonoBehaviour {
 				100f);
 			yield return null;
 		}
-		StarSystemMapPoint.CameraMoving = false;
+		CameraMoving = false;
 		FindObjectOfType<StarSystemInfoDisplay>().SetTargettedSystemInfo(StarSystemData.PlayerHome);
+	}
+
+	public void MoveCameraToSelected() {
+
+		StartCoroutine(MoveTowardsSelectedRoutine());
+	}
+
+	private IEnumerator MoveTowardsSelectedRoutine() {
+
+		CameraMoving = true;
+
+		Vector3 v = Vector3.zero;
+		StarSystemData system = StarMapSceneManager.SystemSelected;
+		Vector3 systemPos = system.GetPosition();
+
+		// The 10.000001 is to account for the Z distance. Really we're just checking if the camera is 0.00001 orthagonically.
+		while (Vector3.Distance(Camera.main.transform.position, systemPos) > 10.00001f) {
+			systemPos = system.GetPosition();
+			Camera.main.transform.position = Vector3.SmoothDamp(
+				Camera.main.transform.position,
+				new Vector3(systemPos.x, systemPos.y,Camera.main.transform.position.z),
+				ref v,
+				.10f,
+				200f);
+			yield return null;
+		}
+
+		CameraMoving = false;
 	}
 
 	private bool MouseInScreen() {

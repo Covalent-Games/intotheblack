@@ -17,20 +17,12 @@ public class StarClusterGenerator : MonoBehaviour {
 	private int _currentStarCount;
 	private Queue<StarSystemData> _connectionQueue = new Queue<StarSystemData>();
 
-	private void Awake() {
-
-		if (!StarSystemData.LoadStarMapFromFile()) {
-			GenerateNewStarSystems();
-			StarSystemData.SaveStarMapToFile();
-		}
-	}
-
 	private void Start() {
 
 		DrawStarMap();
 	}
 
-	private void GenerateNewStarSystems() {
+	public void GenerateNewStarSystems() {
 
 		//Sector generator should use a normalized random inside circle* minimum sector distance instead 
 		//of randomized vector2. This should make for a more varied layout with more consistent connection
@@ -47,6 +39,7 @@ public class StarClusterGenerator : MonoBehaviour {
 		SetHomeSystems();
 		SetHostilityRatings();
 		BuildSpaceStations();
+		StarSystemData.Save();
 	}
 
 	private void GrowStarConnections(StarSystemData star, int numberOfConnections) {
@@ -56,9 +49,8 @@ public class StarClusterGenerator : MonoBehaviour {
 		bool useExistingStar = false;
 
 		for (int i = 0; i < numberOfConnections; i++) {
-			Debug.Log(Random.insideUnitCircle);
-			Debug.Log((Vector3)(Random.insideUnitCircle * Random.Range(-StarConenctionRange, StarConenctionRange)) + 
-				star.GetPosition());
+			//pos = (Vector3)(Random.insideUnitCircle * Random.Range(-StarConenctionRange, StarConenctionRange)) + 
+			//	star.GetPosition();
 			pos = new Vector3(
 				Random.Range(-StarConenctionRange, StarConenctionRange),
 				Random.Range(-StarConenctionRange, StarConenctionRange),

@@ -5,18 +5,22 @@ using System.Collections.Generic;
 
 public class StarSystemMapPoint : MonoBehaviour {
 
-	public static bool CameraMoving = false;
-
 	public Guid ID;
 
 	private static StarSystemInfoDisplay _infoDisplay;
+	private static StarMapCameraController _camController;
 
 	private List<GameObject> lines = new List<GameObject>();
 
 
 	private void Awake() {
 
-		_infoDisplay = FindObjectOfType<StarSystemInfoDisplay>();
+		if (_infoDisplay == null) {
+			_infoDisplay = FindObjectOfType<StarSystemInfoDisplay>(); 
+		}
+		if (_camController == null) {
+			_camController = FindObjectOfType<StarMapCameraController>(); 
+		}
 	}
 
 	public void OnMouseEnter() {
@@ -54,32 +58,10 @@ public class StarSystemMapPoint : MonoBehaviour {
 
 	public void OnMouseDown() {
 
-		if (!CameraMoving) {
-			StartCoroutine(MoveTowardsSelectedRoutine());
+		if (!StarMapCameraController.CameraMoving) {
+			StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[ID];
 			_infoDisplay.SetTargettedSystemInfo(StarSystemData.StartSystemMapTable[ID]);
+			_camController.MoveCameraToSelected();
 		}
-	}
-
-	private IEnumerator MoveTowardsSelectedRoutine() {
-
-		StarSystemMapPoint.CameraMoving = true;
-
-		Vector3 v = Vector3.zero;
-
-		// The 10.000001 is to account for the Z distance. Really we're just checking if the camera is 0.00001 orthagonically.
-		while (Vector3.Distance(Camera.main.transform.position, transform.position) > 10.00001f) {
-			Camera.main.transform.position = Vector3.SmoothDamp(
-				Camera.main.transform.position,
-				new Vector3(
-					transform.position.x,
-					transform.position.y,
-					Camera.main.transform.position.z),
-				ref v,
-				.10f,
-				200f);
-			yield return null;
-		}
-
-		StarSystemMapPoint.CameraMoving = false;
 	}
 }

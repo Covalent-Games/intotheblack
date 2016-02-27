@@ -8,7 +8,17 @@ using Covalent.Data;
 public class StarSystemData {
 
 	public static Dictionary<Guid, StarSystemData> StartSystemMapTable = new Dictionary<Guid, StarSystemData>();
-	public static StarSystemData StarSystemLoaded;
+
+	private static StarSystemData _starSystemLoaded;
+	public static StarSystemData StarSystemLoaded {
+		get {
+			return _starSystemLoaded;
+		}
+		set {
+			_starSystemLoaded = value;
+			GameStateData.State.PlayerOccupiedSystem = _starSystemLoaded.ID;
+		}
+	}
 
 	private static StarSystemData _home;
 	public static StarSystemData PlayerHome {
@@ -103,12 +113,12 @@ public class StarSystemData {
 		return hostility;
 	}
 
-	public static void SaveStarMapToFile() {
+	public static void Save() {
 
 		DataSerializer.SerializeData(StartSystemMapTable, FilePaths.StarMapPath);
 	}
 
-	public static bool LoadStarMapFromFile() {
+	public static bool Load() {
 
 		var map = DataSerializer.DeserializeData<Dictionary<Guid, StarSystemData>>(FilePaths.StarMapPath);
 		if (map != default(Dictionary<Guid, StarSystemData>)) {

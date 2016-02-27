@@ -3,13 +3,21 @@ using System.Collections;
 
 public class StarMapSceneManager : MonoBehaviour {
 
-	// Use this for initialization
-	void Start () {
-	
+	public static StarSystemData SystemSelected;
+
+	private void Awake() {
+
+		GameManager.LoadGame();
+		if (StarSystemData.StartSystemMapTable.Count == 0) {
+			FindObjectOfType<StarClusterGenerator>().GenerateNewStarSystems();
+		}
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+
+	public void JumpToSystem() {
+
+		StarSystemData.StarSystemLoaded = SystemSelected;
+		GameStateData.State.TurnCount++;
+		GameManager.SaveGame();
+		Application.LoadLevel("SystemLevel");
 	}
 }

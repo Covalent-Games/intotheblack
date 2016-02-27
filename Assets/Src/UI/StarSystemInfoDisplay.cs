@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class StarSystemInfoDisplay : MonoBehaviour {
 
 	private Text _systemName;
-	private StarSystemData _systemSelected;
 	private Text _hostilityText;
 	private Image _hostilityBar;
 	private Text _economyText;
@@ -24,8 +23,6 @@ public class StarSystemInfoDisplay : MonoBehaviour {
 	}
 
 	public void SetTargettedSystemInfo(StarSystemData starSystem) {
-
-		_systemSelected = starSystem;
 
 		_systemName.text = starSystem.Name;
 		_hostilityBar.fillAmount = starSystem.Hostility;
@@ -55,11 +52,5 @@ public class StarSystemInfoDisplay : MonoBehaviour {
 		} else {
 			_economyText.text = "Total poverty";
 		}
-	}
-
-	public void JumpToSystem() {
-
-		StarSystemData.StarSystemLoaded = _systemSelected;
-		Application.LoadLevel("Scene1");
 	}
 }

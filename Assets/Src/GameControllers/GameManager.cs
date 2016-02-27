@@ -233,6 +233,24 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// Saves everything!
+	/// </summary>
+	public static void SaveGame() {
+
+		GameStateData.Save();
+		StarSystemData.Save();
+	}
+
+	/// <summary>
+	/// Loads everything! However to get the references on load you'll need to load each file individually.
+	/// </summary>
+	public static void LoadGame() {
+
+		GameStateData.Load();
+		StarSystemData.Load();
+	}
+
 	internal static void GameOver() {
 
 		Time.timeScale = 0f;
