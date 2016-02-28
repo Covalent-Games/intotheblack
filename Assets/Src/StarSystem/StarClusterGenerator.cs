@@ -49,9 +49,9 @@ public class StarClusterGenerator : MonoBehaviour {
 		bool useExistingStar = false;
 
 		for (int i = 0; i < numberOfConnections; i++) {
-			Debug.Log(Random.insideUnitCircle);
-			Debug.Log((Vector3)(Random.insideUnitCircle * Random.Range(-StarConenctionRange, StarConenctionRange)) + 
-				star.GetPosition());
+			//Debug.Log(Random.insideUnitCircle);
+			//Debug.Log((Vector3)(Random.insideUnitCircle * Random.Range(-StarConenctionRange, StarConenctionRange)) + 
+			//	star.GetPosition());
 			pos = new Vector3(
 				Random.Range(-StarConenctionRange, StarConenctionRange),
 				Random.Range(-StarConenctionRange, StarConenctionRange),

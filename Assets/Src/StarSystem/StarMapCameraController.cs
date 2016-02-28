@@ -12,9 +12,11 @@ public class StarMapCameraController : MonoBehaviour {
 	void Start() {
 
 		if (GameStateData.State.PlayerOccupiedSystem != Guid.Empty) {
+			StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[GameStateData.State.PlayerOccupiedSystem];
 			SetCameraToCurrentSystem(StarSystemData.StartSystemMapTable[GameStateData.State.PlayerOccupiedSystem]);
 		} else {
 			MoveCamToHome();
+			StarMapSceneManager.SystemSelected = StarSystemData.PlayerHome;
 		}
 	}
 

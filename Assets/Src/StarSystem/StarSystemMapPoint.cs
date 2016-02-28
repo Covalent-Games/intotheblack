@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using System.Collections;
 using System;
 using System.Collections.Generic;
@@ -58,10 +59,12 @@ public class StarSystemMapPoint : MonoBehaviour {
 
 	public void OnMouseDown() {
 
-		if (!StarMapCameraController.CameraMoving) {
-			StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[ID];
-			_infoDisplay.SetTargettedSystemInfo(StarSystemData.StartSystemMapTable[ID]);
-			_camController.MoveCameraToSelected();
+		if (!EventSystem.current.IsPointerOverGameObject(0)) {
+			if (!StarMapCameraController.CameraMoving) {
+				StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[ID];
+				_infoDisplay.SetTargettedSystemInfo(StarSystemData.StartSystemMapTable[ID]);
+				_camController.MoveCameraToSelected();
+			} 
 		}
 	}
 }

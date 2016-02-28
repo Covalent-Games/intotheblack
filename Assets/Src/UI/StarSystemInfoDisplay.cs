@@ -11,6 +11,7 @@ public class StarSystemInfoDisplay : MonoBehaviour {
 	private Text _economyText;
 	private Image _economyBar;
 	private Text _stationNumber;
+	private Text _population;
 
 	private void Awake() {
 
@@ -20,11 +21,13 @@ public class StarSystemInfoDisplay : MonoBehaviour {
 		_economyText = transform.FindChildRecursive("Economy_Text").GetComponent<Text>();
 		_economyBar = transform.FindChildRecursive("EconomyBar_Image").GetComponent<Image>();
 		_stationNumber = transform.FindChildRecursive("StationNumber_Text").GetComponent<Text>();
+		_population = transform.FindChildRecursive("SystemPopulation_Text").GetComponent<Text>();
 	}
 
 	public void SetTargettedSystemInfo(StarSystemData starSystem) {
 
 		_systemName.text = starSystem.Name;
+		_population.text = starSystem.Population.ToString("N0");
 		_hostilityBar.fillAmount = starSystem.Hostility;
 		_economyBar.fillAmount = starSystem.EconomyState;
 		_stationNumber.text = "Number of stations: " + starSystem.IdToStations.Count;
