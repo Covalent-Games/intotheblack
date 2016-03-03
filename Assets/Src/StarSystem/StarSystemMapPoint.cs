@@ -1,12 +1,15 @@
 ﻿using UnityEngine;
+using UnityEngine.Extensions;
 using UnityEngine.EventSystems;
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class StarSystemMapPoint : MonoBehaviour {
 
 	public Guid ID;
+	public Text SystemName;
 
 	private static StarSystemInfoDisplay _infoDisplay;
 	private static StarMapCameraController _camController;
@@ -22,6 +25,7 @@ public class StarSystemMapPoint : MonoBehaviour {
 		if (_camController == null) {
 			_camController = FindObjectOfType<StarMapCameraController>(); 
 		}
+		SystemName = transform.FindChildRecursive("SystemName").GetComponent<Text>();
 	}
 
 	public void OnMouseEnter() {

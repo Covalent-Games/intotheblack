@@ -67,13 +67,13 @@ public class StarSystemData {
 	public float PositionY;
 	public Dictionary<Guid, SpaceStation> IdToStations = new Dictionary<Guid, SpaceStation>();
 
-	public StarSystemData(long population, float economy, Vector3 position) {
+	public StarSystemData(string name, long population, float economy, Vector3 position) {
 
 		if (ID == Guid.Empty) {
 			ID = Guid.NewGuid();
 		}
 
-		Name = GenerateName();
+		Name = name;
 		Population = population;
 		EconomyState = economy;
 		PositionX = position.x;
@@ -94,12 +94,6 @@ public class StarSystemData {
 			SpaceStation station = new SpaceStation();
 			IdToStations.Add(station.ID, station);
 		}
-	}
-
-	private string GenerateName() {
-
-		// Temporary...
-		return ID.ToString();
 	}
 
 	public static float GetTotalHostilityRating() {

@@ -4,21 +4,28 @@ using System.Collections.Generic;
 using System;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
+using Covalent.Generators;
 
 public class StarClusterGenerator : MonoBehaviour {
 
-	public int StarCount = 20;
+	[HideInInspector]
+	public bool GenerateNewMap = false;
+	public int StarCount = 50;
 	public float StarConenctionRange = 8f;
-	public float MinimumStarDistance = 3f;
+	public float MinimumStarDistance = 3.5f;
 	public Transform StarCluster;
 
 	[SerializeField]
 	private GameObject _starPrefab;
+	[SerializeField]
+	private AnimationCurve _hostilityDistanceCurve;
 	private int _currentStarCount;
 	private Queue<StarSystemData> _connectionQueue = new Queue<StarSystemData>();
+	private MarkovNameGenerator NameGenerator = new MarkovNameGenerator(MarkovNameGenerator.TempSampleData);
 
 	private void Start() {
 
+		// TODO: This should send in a massive file of names so we have a good sample set.
 		DrawStarMap();
 	}
 
@@ -88,6 +95,7 @@ public class StarClusterGenerator : MonoBehaviour {
 	private StarSystemData GenerateNewStar(Vector3 pos) {
 
 		StarSystemData star = new StarSystemData(
+			NameGenerator.GenerateName(),
 			GeneratePopulation(0),
 			Random.Range(.45f, .65f),
 			pos);
@@ -145,7 +153,9 @@ public class StarClusterGenerator : MonoBehaviour {
 			StarSystemData.PlayerHome.GetPosition());
 
 		foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
-			data.Hostility = 1 - Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d;
+			data.Hostility = _hostilityDistanceCurve.Evaluate(
+				Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d);
+			//data.Hostility = 1 - Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d;
 		}
 	}
 
@@ -177,10 +187,13 @@ public class StarClusterGenerator : MonoBehaviour {
 			}
 		}
 
+		StarSystemMapPoint mapPoint;
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 			GameObject go = (GameObject)Instantiate(_starPrefab, kvPair.Value.GetPosition(), Quaternion.identity);;
 			go.transform.SetParent(StarCluster);
-			go.GetComponent<StarSystemMapPoint>().ID = kvPair.Value.ID;
+			mapPoint = go.GetComponent<StarSystemMapPoint>();
+			mapPoint.ID = kvPair.Value.ID;
+			mapPoint.SystemName.text = kvPair.Value.Name;
 			go.GetComponent<Renderer>().material.color = colors[Random.Range(0, colors.Count)];
 			go.name = kvPair.Value.ID.ToString();
 			float scale = Random.Range(0.85f, 1.15f);

@@ -5,6 +5,8 @@ public class StarMapSceneManager : MonoBehaviour {
 
 	public static StarSystemData SystemSelected;
 
+	public StarClusterGenerator SystemGenerator;
+
 	private HostilityManager _hostilityManager;
 
 	private void Awake() {
@@ -12,8 +14,8 @@ public class StarMapSceneManager : MonoBehaviour {
 		_hostilityManager = GetComponent<HostilityManager>();
 
 		GameManager.LoadGame();
-		if (StarSystemData.StartSystemMapTable.Count == 0) {
-			FindObjectOfType<StarClusterGenerator>().GenerateNewStarSystems();
+		if (SystemGenerator.GenerateNewMap || StarSystemData.StartSystemMapTable.Count == 0) {
+			SystemGenerator.GenerateNewStarSystems();
 		}
 	}
 

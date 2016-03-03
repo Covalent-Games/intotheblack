@@ -160,7 +160,7 @@ public class GameManager : MonoBehaviour {
 		int remainingShips = fleetSize;
 		Queue<int> spawnQueue = new Queue<int>();
 		while (remainingShips > 0) {
-			int squadSize = Random.Range(fleetSize / 8, fleetSize / 4);
+			int squadSize = (int)Random.Range(fleetSize / 6f, fleetSize / 4f);
 			if (fleetSize >= squadSize) {
 				remainingShips -= squadSize;
 				spawnQueue.Enqueue(squadSize);
@@ -168,21 +168,30 @@ public class GameManager : MonoBehaviour {
 				spawnQueue.Enqueue(remainingShips);
 			}
 		}
-		Vector2 spawnPos;
+
+		float timer = 0f;
+		int currentSquadSize = 0;
+		float secondsPerEnemy = 4f;
+
+		if (fleetSize != 0) {
+			_overlayUI.DisplayMessage("Enemy squadron detected!"); 
+		}
 
 		while (spawnQueue.Count > 0) {
-			if (ActiveEnemies.Count == 0) {
-				yield return new WaitForSeconds(3f);
+			timer += Time.deltaTime;
+			if (ActiveEnemies.Count == 0 || timer > (currentSquadSize * secondsPerEnemy)) {
+				yield return new WaitForSeconds(1f);
 
-				spawnPos = new Vector2(Random.Range(-50, 50), Random.Range(-50, 50));
-				int squadSize = spawnQueue.Dequeue();
+				currentSquadSize = spawnQueue.Dequeue();
+				timer = 0f;
 
-				_overlayUI.DisplayMessage("Enemy squadron detected!");
-				for (int i = 0; i < squadSize; i++) {
-					InstantiateEnemy(spawnPos + (Random.insideUnitCircle * squadSize));
+				for (int i = 0; i < currentSquadSize; i++) {
+					InstantiateEnemy(new Vector2(Random.Range(-50, 50), Random.Range(-50, 50)));
 				} 
 			}
-
+			yield return null;
+		}
+		while (ActiveEnemies.Count > 0) {
 			yield return null;
 		}
 		StarSystemData.StarSystemLoaded.Hostility = 0f;

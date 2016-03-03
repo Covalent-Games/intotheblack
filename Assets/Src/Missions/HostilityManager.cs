@@ -30,7 +30,6 @@ public class HostilityManager : MonoBehaviour {
 			for (int i = 0; i < SystemsUnderAttack.Count; i++) {
 				SystemsUnderAttack[i].StarSystem.Hostility += SystemsUnderAttack[i].IncreaseAmount;
 			}
-			Debug.Log("The hostility in the sector has grown!");
 			GameStateData.State.ExpandHostility = false; 
 		}
 
@@ -45,13 +44,20 @@ public class HostilityManager : MonoBehaviour {
 	private void AssignNewAttackableSystems() {
 
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
-			float nearbyHostility = 0f;
-			StarSystemData connectedSystem;
-			foreach (Guid systemID in kvPair.Value.ConnectedSystems) {
-				connectedSystem = StarSystemData.StartSystemMapTable[systemID];
-				nearbyHostility += connectedSystem.Hostility;
+			// Don't bother increasing systems that are already very hostile
+			if (kvPair.Value.Hostility > 0.85) {
+				continue;
 			}
-			float threshold = Mathf.Sqrt(kvPair.Value.Population * 0.0000005f) * kvPair.Value.ConnectedSystems.Count;
+
+			float nearbyHostility = 0f;
+			foreach (Guid systemID in kvPair.Value.ConnectedSystems) {
+				nearbyHostility += StarSystemData.StartSystemMapTable[systemID].Hostility;
+			}
+
+			float threshold = Mathf.Clamp(
+				Mathf.Sqrt(kvPair.Value.Population / 750000f * kvPair.Value.ConnectedSystems.Count),
+				0f,
+				kvPair.Value.ConnectedSystems.Count * 0.9f);
 			//Debug.Log(string.Format("{0}: Neighboring Hostility: {1}, Threshold: {2}",
 			//	kvPair.Value.Name, nearbyHostility, threshold));
 			if (nearbyHostility >= threshold) {
