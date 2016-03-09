@@ -50,7 +50,7 @@ public class Destructable : MonoBehaviour {
 		} else {
 			// Each kill brings hostility down by 0.75% (each enemy is = 1% of total hostility)
 			StarSystemData.StarSystemLoaded.Hostility -= 0.0075f;
-			GameManager.PlayerExperience += MaxHealth;
+			PlayerData.State.CurrentPlayerExperience += MaxHealth;	// Gain experience == enemy's health. TODO: make enemy experience a function of that enemy. Make Enemy class?
 			if (GameManager.ActiveEnemies.Contains(gameObject)) {
 				GameManager.ActiveEnemies.Remove(gameObject);
 			}
@@ -85,7 +85,7 @@ public class Destructable : MonoBehaviour {
 			if (Health <= 0) {
 				if (CompareTag("Enemy")) {
 					// If this isn't exactly the opposite of how experience is gained, the player will get mad.
-					GameManager.PlayerExperience -= MaxHealth;
+					PlayerData.State.CurrentPlayerExperience -= MaxHealth;
 				}
 			}
 		}

@@ -8,34 +8,41 @@ public class GameManager : MonoBehaviour {
 
 	public static GameObject Player;
 	public static GameManager Instance;
-	public static int PlayerLevel = 1;
-	private static int _playerExperience;
-	public static int PlayerExperience {
-		get	{
-			return _playerExperience;
-		}
-		set	{
-			PlayerScore += value - _playerExperience;
-			_playerExperience = value;
-			if (_playerExperience >= ExperienceToLevel) {
+	//public static Player PlayerObject;
+	//public static int PlayerLevel = 1;
+	//private static int _playerExperience;
+	//public static int PlayerExperience {
+	//	get	{
+	//		return _playerExperience;
+	//	}
+	//	set	{
+	//		PlayerScore += value - _playerExperience;
+	//		_playerExperience = value;
+	//		if (_playerExperience >= ExperienceToLevel) {
 				
-				LevelUp();
-			}
-		}
-	}
+	//			LevelUp();
+	//		}
+	//	}
+	//}
 
-	public static int ExperienceToLevel = 125;
-	public static int PlayerScore;
+	//public static int ExperienceToLevel = 125;
+	//public static int PlayerScore;
 	public static List<GameObject> ActiveEnemies = new List<GameObject>();
 
-	public int UpgradePoints = 0;
+	//public int UpgradePoints = 0;
 	public Objective CurrentObjective;
 	public int ObjectivesCollected;
 	public int ObjectiveDistance = 50;
 	public int MaxEnemies = 100;
 
+	// Settings
+	public bool AwardUpgradePointsOnLevelUp = true;
+	public float NextLevelExperienceMultiplier = 1.5f;
+	public int BaseExperienceNeeded = 100;
+	public string LevelUpMessage = "You have leveled up! (Press ESC to Upgrade)";
+
 	private GameObject _enemyPrefab;
-	private OverlayUI _overlayUI;
+	public OverlayUI OverlayUI;
 	private float minSpawnDelay = 3f;
 	private float maxSpawnDelay = 11f;
 	private GameObject _asteroidPrefab;
@@ -45,15 +52,15 @@ public class GameManager : MonoBehaviour {
 	private Transform ProjectileContainer;
 
 
-	private static void LevelUp() {
+	//private static void LevelUp() {
 
-		int remaining = _playerExperience - ExperienceToLevel;
-		_playerExperience = remaining;
-		ExperienceToLevel = Mathf.RoundToInt(ExperienceToLevel * 1.5f);
-		PlayerLevel++;
-		Instance.UpgradePoints++;
-		Instance._overlayUI.DisplayMessage("You have leveled up! (Press ESC to Upgrade)");
-	}
+	//	int remaining = _playerExperience - ExperienceToLevel;
+	//	_playerExperience = remaining;
+	//	ExperienceToLevel = Mathf.RoundToInt(ExperienceToLevel * 1.5f);
+	//	PlayerLevel++;
+	//	Instance.UpgradePoints++;
+	//	Instance.OverlayUI.DisplayMessage("You have leveled up! (Press ESC to Upgrade)");
+	//}
 
 	private void Awake() {
 
@@ -67,12 +74,12 @@ public class GameManager : MonoBehaviour {
 		_enemyPrefab = (GameObject)Resources.Load("Prefabs/EnemyShip");
 		_asteroidPrefab = (GameObject)Resources.Load("Prefabs/Asteroid");
 		Player = GameObject.FindGameObjectWithTag("Player");
-		_overlayUI = GetComponent<OverlayUI>();
-		_overlayUI.Manager = this;
+		OverlayUI = GetComponent<OverlayUI>();
+		OverlayUI.Manager = this;
 
 		if (CurrentObjective != null) {
 			CurrentObjective.Manager = this;
-			CurrentObjective.GameUI = _overlayUI;
+			CurrentObjective.GameUI = OverlayUI;
 		} else {
 			Debug.LogException(new Exception("CurrentObjective not set!"));
 		}
@@ -177,7 +184,7 @@ public class GameManager : MonoBehaviour {
 				spawnPos = new Vector2(Random.Range(-50, 50), Random.Range(-50, 50));
 				int squadSize = spawnQueue.Dequeue();
 
-				_overlayUI.DisplayMessage("Enemy squadron detected!");
+				OverlayUI.DisplayMessage("Enemy squadron detected!");
 				for (int i = 0; i < squadSize; i++) {
 					InstantiateEnemy(spawnPos + (Random.insideUnitCircle * squadSize));
 				} 
@@ -186,7 +193,7 @@ public class GameManager : MonoBehaviour {
 			yield return null;
 		}
 		StarSystemData.StarSystemLoaded.Hostility = 0f;
-		_overlayUI.DisplayMessage("Well done. This sector has been defended. Carry on, Captain.");
+		OverlayUI.DisplayMessage("Well done. This sector has been defended. Carry on, Captain.");
 	}
 
 	private int GetEnemyFleetSize(StarSystemData starData) {
@@ -207,7 +214,7 @@ public class GameManager : MonoBehaviour {
 		}
 		newEnemyGO.transform.position = pos;
 		newEnemyGO.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.zero);
-		_overlayUI.LinkNewArrow(newEnemyGO.transform);
+		OverlayUI.LinkNewArrow(newEnemyGO.transform);
 		ActiveEnemies.Add(newEnemyGO);
 	}
 
@@ -216,7 +223,7 @@ public class GameManager : MonoBehaviour {
 		while (gameObject.activeSelf) {
 			if (!CurrentObjective.gameObject.activeSelf) {
 				yield return new WaitForSeconds(Random.Range(10, 30));
-				_overlayUI.DisplayMessage("Beacon located! Secure the objective!");
+				OverlayUI.DisplayMessage("Beacon located! Secure the objective!");
 				Vector3 newPos = new Vector3(
 					Random.Range(-ObjectiveDistance, ObjectiveDistance),
 					Random.Range(-ObjectiveDistance, ObjectiveDistance),
@@ -240,6 +247,7 @@ public class GameManager : MonoBehaviour {
 
 		GameStateData.Save();
 		StarSystemData.Save();
+		PlayerData.Save();
 	}
 
 	/// <summary>
@@ -249,6 +257,7 @@ public class GameManager : MonoBehaviour {
 
 		GameStateData.Load();
 		StarSystemData.Load();
+		PlayerData.Load();
 	}
 
 	internal static void GameOver() {
