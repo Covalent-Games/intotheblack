@@ -43,6 +43,7 @@ public class StarClusterGenerator : MonoBehaviour {
 			_currentStarCount += count;
 		}
 		ConnectNearbyStars();
+		GeneratePopulation();
 		SetHomeSystems();
 		SetHostilityRatings();
 		BuildSpaceStations();
@@ -96,7 +97,6 @@ public class StarClusterGenerator : MonoBehaviour {
 
 		StarSystemData star = new StarSystemData(
 			NameGenerator.GenerateName(),
-			GeneratePopulation(0),
 			Random.Range(.45f, .65f),
 			pos);
 		return star;
@@ -107,12 +107,25 @@ public class StarClusterGenerator : MonoBehaviour {
 		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
 			foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 				if (Vector3.Distance(star.GetPosition(), kvPair.Value.GetPosition()) <= StarConenctionRange * 0.75f) {
-					if (star != kvPair.Value && !star.ConnectedSystems.Contains(kvPair.Value.ID)) {
+					if (star != kvPair.Value && 
+						!star.ConnectedSystems.Contains(kvPair.Value.ID) && 
+						!kvPair.Value.ConnectedSystems.Contains(star.ID)) {
+
 						star.ConnectedSystems.Add(kvPair.Value.ID);
 						kvPair.Value.ConnectedSystems.Add(star.ID);
 					}
 				}
 			}
+		}
+	}
+
+	private void GeneratePopulation() {
+
+		int connectedCount = 0;
+		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
+			connectedCount = star.ConnectedSystems.Count;
+			star.Population = (int)Random.Range(Mathf.Exp(connectedCount/2) * 10000, Mathf.Exp(connectedCount/3) * 1000000);
+			Debug.Log(star.Population + " -- " + star.ConnectedSystems.Count);
 		}
 	}
 
@@ -200,17 +213,5 @@ public class StarClusterGenerator : MonoBehaviour {
 			go.transform.localScale = new Vector3(scale, scale, 1);
 		}
 
-	}
-
-	private int GeneratePopulation(int population) {
-
-		int add = Random.Range(1000, 1000000);
-		population += add;
-		
-		if (add > 500000) {
-			population += GeneratePopulation(population);
-		}
-
-		return population;
 	}
 }

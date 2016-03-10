@@ -62,19 +62,18 @@ public class StarSystemData {
 	public bool IsEnemyHome = false;
 	public string Name;
 	public List<Guid> ConnectedSystems = new List<Guid>();
-	public long Population;
+	public int Population;
 	public float PositionX;
 	public float PositionY;
 	public Dictionary<Guid, SpaceStation> IdToStations = new Dictionary<Guid, SpaceStation>();
 
-	public StarSystemData(string name, long population, float economy, Vector3 position) {
+	public StarSystemData(string name, float economy, Vector3 position) {
 
 		if (ID == Guid.Empty) {
 			ID = Guid.NewGuid();
 		}
 
 		Name = name;
-		Population = population;
 		EconomyState = economy;
 		PositionX = position.x;
 		PositionY = position.y;

@@ -13,7 +13,7 @@ namespace Covalent.Generators {
 		public int Order = 2;
 
 		private Dictionary<string, List<string>> _markovTable = new Dictionary<string, List<string>>();
-		private List<string> _markovTableKeys;
+		private List<string> _vowelNameBeginnings;
 		private System.Random rand = new System.Random();
 
 		public MarkovNameGenerator(List<string> sampleSet) {
@@ -36,16 +36,19 @@ namespace Covalent.Generators {
 					}
 				}
 			}
-			_markovTableKeys = new List<string>(_markovTable.Keys);
+			_vowelNameBeginnings = new List<string>();
+			foreach (var key in _markovTable.Keys) {
+				if (key.Contains("a") || key.Contains("e") || key.Contains("i") || key.Contains("o") || key.Contains("u")) {
+					_vowelNameBeginnings.Add(key);
+				}
+			}
 		}
 
 		public string GenerateName(int maxLength = 12) {
 
 			int length = rand.Next(4, maxLength);
-			Debug.Log(_markovTable);
-			Debug.Log(rand);
-			Debug.Log(_markovTableKeys);
-			string name = _markovTableKeys[rand.Next(0, _markovTableKeys.Count)];
+			// Get first 2 characters
+			string name = _vowelNameBeginnings[rand.Next(0, _vowelNameBeginnings.Count)];
 
 			List<string> followingValues;
 			while (--length > 0) {
