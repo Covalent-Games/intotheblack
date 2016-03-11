@@ -60,10 +60,31 @@ public class PlayerData {
 		}
 	}
 
+	private int _currentHealth;
+	public int CurrentHealth {
+		get {
+			return _currentHealth;
+		}
+		set {
+			_currentHealth = value;
+		}
+	}
+
+	private int _maxHealth;
+	public int MaxHealth {
+		get {
+			return _maxHealth;
+		}
+		set {
+			_maxHealth = value;
+		}
+	}
+
 	private int _startingLevel = 1;
 	private int _startingExperience = 0;
 	private int _startingScore = 0;
 	private int _startingUpgradePoints = 0;
+	private int _startingHealth = 50;
 
 	private static PlayerData _state;
 	public static PlayerData State {
@@ -99,6 +120,8 @@ public class PlayerData {
 		this.PlayerScore = this._startingScore;
 		this.UpgradePoints = this._startingUpgradePoints;
 		this.ExperienceToLevelUp = GetExperienceNeededForLevel(this.PlayerLevel + 1);
+		this.MaxHealth = this._startingHealth;
+		this.CurrentHealth = this.MaxHealth;
 	}
 
 	public int GetExperienceNeededForLevel(int level) {

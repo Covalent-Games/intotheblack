@@ -27,7 +27,9 @@ public class Destructable : MonoBehaviour {
 
 	void Start() {
 
-		Health = MaxHealth;
+		MaxHealth = PlayerData.State.MaxHealth == 0 ? 50 : PlayerData.State.MaxHealth;
+		Health = PlayerData.State.CurrentHealth == 0 ? MaxHealth : PlayerData.State.CurrentHealth;
+		//Health = MaxHealth;
 		_rb2d = GetComponent<Rigidbody2D>();
 		if (tag == "Player") {
 			StartCoroutine(HealOverTimeRoutine());

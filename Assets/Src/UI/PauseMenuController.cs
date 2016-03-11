@@ -47,6 +47,11 @@ public class PauseMenuController : MonoBehaviour {
 		//TODO: Save the game.
 		Time.timeScale = 1;
 		StarSystemData.Save();
+		// Copy health over before saving.
+
+		Destructable stats = GameManager.Player.GetComponent<Destructable>();
+		PlayerData.State.CurrentHealth = stats.Health;
+		PlayerData.State.MaxHealth = stats.MaxHealth;
 		PlayerData.Save();
 		Application.LoadLevel("StarClusterMap");
 	}

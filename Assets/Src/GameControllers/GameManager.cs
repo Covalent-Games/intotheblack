@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour {
 
 	public static GameObject Player;
 	public static GameManager Instance;
-	//public static Player PlayerObject;
+	public static Player PlayerObject;
 	//public static int PlayerLevel = 1;
 	//private static int _playerExperience;
 	//public static int PlayerExperience {
