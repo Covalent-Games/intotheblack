@@ -24,6 +24,8 @@ public class OverlayUI : MonoBehaviour {
 	private Text _gameOverText;
 	private Transform _objectiveArrow;
 	private Image _objectiveArrowIcon;
+	private NavigatorArrow _stationArrow;
+	private Image _stationArrowIcon;
 	private Text _notification;
 	private Queue<string> _notifcationQueue = new Queue<string>();
 	private Text _score;
@@ -46,6 +48,8 @@ public class OverlayUI : MonoBehaviour {
 		ObjectivesCompletedText = transform.FindChildRecursive("ObjectiveCount_Text").GetComponent<Text>();
 		_objectiveArrow = transform.FindChildRecursive("ObjectiveArrow");
 		_objectiveArrowIcon = _objectiveArrow.GetChild(0).GetComponent<Image>();
+		_stationArrow = transform.FindChildRecursive("StationArrow").GetComponent<NavigatorArrow>();
+		_stationArrowIcon = _stationArrow.transform.GetChild(0).GetComponent<Image>();
 		_notification = transform.FindChildRecursive("Notification_Text").GetComponent<Text>();
 		_score = transform.FindChildRecursive("Score_Text").GetComponent<Text>();
 		_shieldCooldown = transform.FindChildRecursive("ShieldCooldown_Image").GetComponent<Image>();
@@ -54,9 +58,18 @@ public class OverlayUI : MonoBehaviour {
 	void Start() {
 
 		_navigatorArrowList.Add(_navigatorArrow.GetComponent<NavigatorArrow>());
+		if (StarSystemData.StarSystemLoaded.LocalSpaceStation.StationTransform != null) {
+			_stationArrow.GetComponent<NavigatorArrow>().TargetRenderer = StarSystemData
+				.StarSystemLoaded
+				.LocalSpaceStation
+				.StationTransform
+				.FindChild("SpaceStationRenderer")
+				.GetComponent<Renderer>();
+			_stationArrow.gameObject.SetActive(true);
+		}
 	}
 
-	public void LinkNewArrow(Transform entity) {
+	public void LinkNewArrowToEnemy(Transform entity) {
 
 		NavigatorArrow arrow = null;
 		for (int i = 0; i < _navigatorArrowList.Count; i++) {
@@ -167,6 +180,22 @@ public class OverlayUI : MonoBehaviour {
 		} else {
 			if (_objectiveArrowIcon.enabled) {
 				_objectiveArrowIcon.enabled = false;
+			}
+		}
+
+		// Station Arrow
+		if (!_stationArrow.TargetRenderer.isVisible) {
+			if (!_stationArrow.gameObject.activeSelf) {
+				_stationArrow.gameObject.SetActive(true);
+			}
+			_stationArrow.transform.rotation =
+				Quaternion.LookRotation(
+							Vector3.forward,
+							StarSystemData.StarSystemLoaded.LocalSpaceStation.StationTransform.position
+							- _playerStats.transform.position);
+		} else {
+			if (_stationArrow.gameObject.activeSelf) {
+				_stationArrow.gameObject.SetActive(false);
 			}
 		}
 	}

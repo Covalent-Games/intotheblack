@@ -10,7 +10,7 @@ namespace Covalent.Generators {
 		/// the results could return exact replicas from the sample set. 2 seems to be a good number. Change
 		/// at your own risk.
 		/// </summary>
-		public int Order = 2;
+		public int Order = 1;
 
 		private Dictionary<string, List<string>> _markovTable = new Dictionary<string, List<string>>();
 		private List<string> _vowelNameBeginnings;

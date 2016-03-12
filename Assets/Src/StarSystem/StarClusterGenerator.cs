@@ -46,7 +46,7 @@ public class StarClusterGenerator : MonoBehaviour {
 		GeneratePopulation();
 		SetHomeSystems();
 		SetHostilityRatings();
-		BuildSpaceStations();
+		SetSystemEconomies();
 		StarSystemData.Save();
 	}
 
@@ -125,7 +125,7 @@ public class StarClusterGenerator : MonoBehaviour {
 		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
 			connectedCount = star.ConnectedSystems.Count;
 			star.Population = (int)Random.Range(Mathf.Exp(connectedCount/2) * 10000, Mathf.Exp(connectedCount/3) * 1000000);
-			Debug.Log(star.Population + " -- " + star.ConnectedSystems.Count);
+			//Debug.Log(star.Population + " -- " + star.ConnectedSystems.Count);
 		}
 	}
 
@@ -172,7 +172,7 @@ public class StarClusterGenerator : MonoBehaviour {
 		}
 	}
 
-	private void BuildSpaceStations() {
+	private void SetSystemEconomies() {
 		
 		foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
 			float economicStateModifier = 0.5f + (data.ConnectedSystems.Count / 7f) * 0.5f;
@@ -181,7 +181,6 @@ public class StarClusterGenerator : MonoBehaviour {
 			//	data.ConnectedSystems.Count,
 			//	data.EconomyState, economicStateModifier, data.EconomyState *= economicStateModifier));
 			data.EconomyState *= economicStateModifier;
-			data.AddStations();
 		}
 	}
 

@@ -38,8 +38,6 @@ public class PlayerShipShield : MonoBehaviour {
 
 	private void OnTriggerEnter2D(Collider2D collider) {
 
-		Debug.Log("shielded!");
-
 		Projectile projectile = collider.GetComponent<Projectile>();
 
 		if (projectile != null) {

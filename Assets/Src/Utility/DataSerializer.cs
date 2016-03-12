@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
+using System;
 
 // TODO: Add encryption. Eventually add server side saving as well to make this an "all inclusive" utility.
 namespace Covalent.Data {
@@ -14,7 +15,7 @@ namespace Covalent.Data {
 			BinaryFormatter formatter = new BinaryFormatter();
 			try {
 				formatter.Serialize(fs, data);
-				Debug.Log("Data written to " + path);
+				Debug.Log("Data written to " + path + " @ " + DateTime.Now.ToShortTimeString());
 			} catch (SerializationException e) {
 				Debug.LogError(e.Message);
 			} finally {

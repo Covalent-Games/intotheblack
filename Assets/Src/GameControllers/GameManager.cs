@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour {
 			return;
 		}
 
+		StarSystemData.StarSystemLoaded.InstantiateStation();
 		_enemyPrefab = (GameObject)Resources.Load("Prefabs/EnemyShip");
 		_asteroidPrefab = (GameObject)Resources.Load("Prefabs/Asteroid");
 		Player = GameObject.FindGameObjectWithTag("Player");
@@ -216,7 +217,7 @@ public class GameManager : MonoBehaviour {
 		}
 		newEnemyGO.transform.position = pos;
 		newEnemyGO.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.zero);
-		_overlayUI.LinkNewArrow(newEnemyGO.transform);
+		_overlayUI.LinkNewArrowToEnemy(newEnemyGO.transform);
 		ActiveEnemies.Add(newEnemyGO);
 	}
 
