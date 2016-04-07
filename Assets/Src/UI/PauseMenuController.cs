@@ -47,13 +47,19 @@ public class PauseMenuController : MonoBehaviour {
 		//TODO: Save the game.
 		Time.timeScale = 1;
 		StarSystemData.Save();
+		// Copy health over before saving.
+
+		Destructable stats = GameManager.Player.GetComponent<Destructable>();
+		PlayerData.State.CurrentHealth = stats.Health;
+		PlayerData.State.MaxHealth = stats.MaxHealth;
+		PlayerData.Save();
 		Application.LoadLevel("StarClusterMap");
 	}
 
 	public void TogglePauseGame(bool pause) {
 
 		_pauseMenu.SetActive(pause);
-		if (GameManager.Instance.UpgradePoints > 0) {
+		if (PlayerData.State.UpgradePoints > 0) {
 			_levelUpEnableButton.SetActive(true);
 		} else {
 			_levelUpEnableButton.SetActive(false);
@@ -69,9 +75,10 @@ public class PauseMenuController : MonoBehaviour {
 	public void Restart() {
 
 		Application.LoadLevel(Application.loadedLevel);
-		GameManager.PlayerExperience = 0;
-		GameManager.ExperienceToLevel = 125;
-		GameManager.PlayerLevel = 1;
+		PlayerData.State.ResetPlayerData();
+		//GameManager.PlayerExperience = 0;
+		//GameManager.ExperienceToLevel = 125;
+		//GameManager.PlayerLevel = 1;
 		GameManager.ActiveEnemies.Clear();
 	}
 }

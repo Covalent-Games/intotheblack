@@ -14,12 +14,12 @@ public class LevelUpUI : MonoBehaviour {
 	}
 
 	private void Update() {
-		_upgradePointsRemaining.text = GameManager.Instance.UpgradePoints.ToString();
+		_upgradePointsRemaining.text = PlayerData.State.UpgradePoints.ToString();
 	}
 
 	private void CloseIfApplicable() {
 
-		if (GameManager.Instance.UpgradePoints == 0) {
+		if (PlayerData.State.UpgradePoints == 0) {
 			_pauseMenuController.CloseLevelUpPanel();
 			enabled = false;
 		}
@@ -31,7 +31,7 @@ public class LevelUpUI : MonoBehaviour {
 
 		if (weps.RateOfFire < 8) {
 			weps.RateOfFire += 1;
-			GameManager.Instance.UpgradePoints--; 
+			PlayerData.State.UpgradePoints--; 
 		}
 		CloseIfApplicable();
 	}
@@ -40,7 +40,7 @@ public class LevelUpUI : MonoBehaviour {
 
 		if (GameManager.Player.GetComponent<ShipWeapons>().TorpedoFireRate < 4) {
 			GameManager.Player.GetComponent<ShipWeapons>().TorpedoFireRate++;
-			GameManager.Instance.UpgradePoints--;
+			PlayerData.State.UpgradePoints--;
 		}
 		CloseIfApplicable();
 	}
@@ -50,7 +50,7 @@ public class LevelUpUI : MonoBehaviour {
 		Destructable stats = GameManager.Player.GetComponent<Destructable>();
 		if (stats.MaxHealth < 100) {
 			stats.Sethealth(stats.MaxHealth + 10);
-			GameManager.Instance.UpgradePoints--; 
+			PlayerData.State.UpgradePoints--; 
 		}
 		CloseIfApplicable();
 	}
@@ -65,7 +65,7 @@ public class LevelUpUI : MonoBehaviour {
 			weps.ShieldCooldown -= 2;
 			engines.BoostCooldown -= 1;
 
-			GameManager.Instance.UpgradePoints--;
+			PlayerData.State.UpgradePoints--;
 		}
 		CloseIfApplicable();
 	}
