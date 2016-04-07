@@ -168,6 +168,10 @@ public class OverlayUI : MonoBehaviour {
 				}
 			}
 		}
+
+		UpdateGenericArrow(_stationArrow,
+			StarSystemData.StarSystemLoaded.LocalSpaceStation.StationTransform.position - _playerStats.transform.position);
+
 		// Objective arrow
 		if (Manager.CurrentObjective.gameObject.activeSelf) {
 			if (!_objectiveArrowIcon.enabled) {
@@ -183,19 +187,33 @@ public class OverlayUI : MonoBehaviour {
 			}
 		}
 
-		// Station Arrow
-		if (!_stationArrow.TargetRenderer.isVisible) {
-			if (!_stationArrow.gameObject.activeSelf) {
-				_stationArrow.gameObject.SetActive(true);
+		//// Station Arrow
+		//if (!_stationArrow.TargetRenderer.isVisible) {
+		//	if (!_stationArrow.gameObject.activeSelf) {
+		//		_stationArrow.gameObject.SetActive(true);
+		//	}
+		//	_stationArrow.transform.rotation =
+		//		Quaternion.LookRotation(
+		//					Vector3.forward,
+		//					StarSystemData.StarSystemLoaded.LocalSpaceStation.StationTransform.position
+		//					- _playerStats.transform.position);
+		//} else {
+		//	if (_stationArrow.gameObject.activeSelf) {
+		//		_stationArrow.gameObject.SetActive(false);
+		//	}
+		//}
+	}
+
+	private void UpdateGenericArrow(NavigatorArrow arrow, Vector3 lookVector, Color color = default(Color)) {
+
+		if (!arrow.TargetRenderer.isVisible) {
+			if (!arrow.gameObject.activeSelf) {
+				arrow.gameObject.SetActive(true);
 			}
-			_stationArrow.transform.rotation =
-				Quaternion.LookRotation(
-							Vector3.forward,
-							StarSystemData.StarSystemLoaded.LocalSpaceStation.StationTransform.position
-							- _playerStats.transform.position);
+			arrow.transform.rotation = Quaternion.LookRotation(Vector3.forward, lookVector);
 		} else {
-			if (_stationArrow.gameObject.activeSelf) {
-				_stationArrow.gameObject.SetActive(false);
+			if (arrow.gameObject.activeSelf) {
+				arrow.gameObject.SetActive(false);
 			}
 		}
 	}
