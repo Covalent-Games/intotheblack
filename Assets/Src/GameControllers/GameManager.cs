@@ -181,7 +181,7 @@ public class GameManager : MonoBehaviour {
 		float secondsPerEnemy = 4f;
 
 		if (fleetSize != 0) {
-			_overlayUI.DisplayMessage("Enemy squadron detected!"); 
+			OverlayUI.DisplayMessage("Enemy squadron detected!"); 
 		}
 
 		while (spawnQueue.Count > 0) {
