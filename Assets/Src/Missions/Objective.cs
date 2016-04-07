@@ -7,6 +7,7 @@ public class Objective : MonoBehaviour {
 	public ParticleSystem BeaconLight;
 	public GameManager Manager;
 	public OverlayUI GameUI;
+	public int PointsAwarded = 65;	// TODO: make this configurable
 
 	private void OnTriggerEnter2D(Collider2D collider) {
 
@@ -26,7 +27,8 @@ public class Objective : MonoBehaviour {
 				Manager.ObjectiveDistance += 25;
 				GameUI.UpdateObjectiveText(Manager.ObjectivesCollected);
 				GameUI.UpdateObjectiveText(Manager.ObjectivesCollected);
-				GameManager.PlayerExperience += 65;
+				PlayerData.State.CurrentPlayerExperience += PointsAwarded;
+				//GameManager.PlayerExperience += 65;
 				GameUI.DisplayMessage("Well done! Await the next beacon's location.");
 			}
 			AudioSource.PlayClipAtPoint(SoundHolder.Instance.SuccessTone, Camera.main.transform.position);

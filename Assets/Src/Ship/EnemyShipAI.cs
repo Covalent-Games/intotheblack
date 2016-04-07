@@ -34,7 +34,7 @@ public class EnemyShipAI : MonoBehaviour {
 
 		_state = GetRandomState();
 		if (_state == AIState.Intelligent) {
-			_shipWeapons.GunDamage = Random.Range(1, GameManager.PlayerLevel);
+			_shipWeapons.GunDamage = Random.Range(1, PlayerData.State.PlayerLevel);
 			_shipController.RotationSpeed *= 2.5f;
 			Transform t = transform.GetChild(0);
 			t.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("ImportedImages/smartEnemy");
