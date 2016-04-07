@@ -79,7 +79,7 @@ public class OverlayUI : MonoBehaviour {
 
 	public void DisplayGameOverText() {
 
-		_gameOverText.text = "Pow, you're dead. Score: " + GameManager.PlayerScore;
+		_gameOverText.text = "Pow, you're dead. Score: " + PlayerData.State.PlayerScore;
 		_gameOverText.enabled = true;
 	}
 
@@ -100,9 +100,9 @@ public class OverlayUI : MonoBehaviour {
 			_shipWeapons.ShieldCooldownCurrent / _shipWeapons.ShieldCooldown;
 
 		_experienceBar.fillAmount =
-			(float)GameManager.PlayerExperience / GameManager.ExperienceToLevel;
-		PlayerLevelText.text = GameManager.PlayerLevel.ToString();
-		_score.text = GameManager.PlayerScore.ToString();
+			(float)PlayerData.State.CurrentPlayerExperience / PlayerData.State.ExperienceToLevelUp;
+		PlayerLevelText.text = PlayerData.State.PlayerLevel.ToString();
+		_score.text = PlayerData.State.PlayerScore.ToString();
 
 		UpdateArrows();
 		DisplayMessages();
