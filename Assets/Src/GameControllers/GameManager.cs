@@ -224,7 +224,7 @@ public class GameManager : MonoBehaviour {
 		}
 		newEnemyGO.transform.position = pos;
 		newEnemyGO.transform.rotation = Quaternion.LookRotation(Vector3.forward, Vector3.zero);
-		OverlayUI.LinkNewArrow(newEnemyGO.transform);
+		OverlayUI.LinkNewArrowToEnemy(newEnemyGO.transform);
 		ActiveEnemies.Add(newEnemyGO);
 	}
 
