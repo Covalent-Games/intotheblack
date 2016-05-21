@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour {
 	public static GameObject Player;
 	public static GameManager Instance;
 	public static Player PlayerObject;
+	public GameObject[] ComponentPrefabs = new GameObject[5];
 	//public static int PlayerLevel = 1;
 	//private static int _playerExperience;
 	//public static int PlayerExperience {

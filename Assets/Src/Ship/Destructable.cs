@@ -25,6 +25,13 @@ public class Destructable : MonoBehaviour {
 	private int _health;
 	private Rigidbody2D _rb2d;
 
+	public Component PrimaryWeaponComponent;
+	public Component SecondaryWeaponComponent;
+	public Component ShieldComponent;
+	public Component HullComponent;
+	public Component EngineComponent;
+
+
 	void Start() {
 
 		MaxHealth = PlayerData.State.MaxHealth == 0 ? 50 : PlayerData.State.MaxHealth;
@@ -33,6 +40,7 @@ public class Destructable : MonoBehaviour {
 		_rb2d = GetComponent<Rigidbody2D>();
 		if (tag == "Player") {
 			StartCoroutine(HealOverTimeRoutine());
+			SetUpAbilities();
 		}
 	}
 
@@ -42,6 +50,17 @@ public class Destructable : MonoBehaviour {
 			yield return new WaitForSeconds(5f);
 			Health += 1;
 		}
+	}
+
+	private void SetUpAbilities() {
+
+		this.PrimaryWeaponComponent = new Component();
+		this.SecondaryWeaponComponent = new Component();
+		this.ShieldComponent = new Component();
+		this.HullComponent = new Component();
+		this.EngineComponent = new Component();
+
+		this.ShieldComponent.CreateRandomComponent((int)ComponentTypeEnum.Sheild, 1);
 	}
 
 	private void Die() {
