@@ -7,11 +7,13 @@ public class StarMapSceneManager : MonoBehaviour {
 
 	public StarClusterGenerator SystemGenerator;
 
-	private HostilityManager _hostilityManager;
+	//private HostilityManager _hostilityManager;
+	private GalaxySimulator _galaxySimulator;
 
 	private void Awake() {
 
-		_hostilityManager = GetComponent<HostilityManager>();
+		//_hostilityManager = GetComponent<HostilityManager>();
+		_galaxySimulator = GetComponent<GalaxySimulator>();
 
 		GameManager.LoadGame();
 		if (SystemGenerator.GenerateNewMap || StarSystemData.StartSystemMapTable.Count == 0) {
@@ -21,7 +23,8 @@ public class StarMapSceneManager : MonoBehaviour {
 
 	private void Start() {
 
-		_hostilityManager.UpdateSystemHostility();
+		_galaxySimulator.UpdateGalaxy();
+		SystemGenerator.DrawStarMap();
 	}
 
 	public void JumpToSystem() {

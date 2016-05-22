@@ -8,6 +8,12 @@ public class StarMapCameraController : MonoBehaviour {
 	public static bool CameraMoving = false;
 
 	private Vector3 _cameraVelocity = Vector3.zero;
+	[SerializeField]
+	private float _scrollSensitivity = 10;
+	[SerializeField]
+	private float _minimumZoom = 5f;
+	[SerializeField]
+	private float _maximumZoom = 20f;
 
 	void Start() {
 
@@ -17,6 +23,21 @@ public class StarMapCameraController : MonoBehaviour {
 		} else {
 			MoveCamToHome();
 			StarMapSceneManager.SystemSelected = StarSystemData.PlayerHome;
+		}
+	}
+
+	private void Update() {
+
+		ZoomCamera(Input.GetAxis("Mouse ScrollWheel"));
+	}
+
+	private void ZoomCamera(float scrollDelta) {
+
+		if (scrollDelta != 0) {
+			scrollDelta *= Time.deltaTime * _scrollSensitivity * Camera.main.orthographicSize;
+			if (Camera.main.orthographicSize - scrollDelta >= _maximumZoom) { return; }
+			if (Camera.main.orthographicSize - scrollDelta <= _minimumZoom) { return; }
+			Camera.main.orthographicSize -= scrollDelta;
 		}
 	}
 
