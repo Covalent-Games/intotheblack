@@ -114,7 +114,8 @@ public class StarClusterGenerator : MonoBehaviour {
 		int connectedCount = 0;
 		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
 			connectedCount = star.ConnectedSystems.Count;
-			star.Population = (int)Random.Range(Mathf.Exp(connectedCount/2) * 10000, Mathf.Exp(connectedCount/3) * 1000000);
+
+			star.Population = (int)Random.Range(Mathf.Exp(connectedCount/3f) * 10000, Mathf.Exp(connectedCount/2f) * 1000000);
 		}
 	}
 
