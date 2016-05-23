@@ -204,15 +204,23 @@ public class StarClusterGenerator : MonoBehaviour {
 
 		StarSystemMapPoint mapPoint;
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
-			GameObject go = (GameObject)Instantiate(_starPrefab, kvPair.Value.GetPosition(), Quaternion.identity);;
+			GameObject go = (GameObject)Instantiate(_starPrefab, kvPair.Value.GetPosition(), Quaternion.identity);
 			go.transform.SetParent(StarCluster);
+			go.name = kvPair.Value.ID.ToString();
 			mapPoint = go.GetComponent<StarSystemMapPoint>();
 			mapPoint.ID = kvPair.Value.ID;
 			mapPoint.SystemName.text = kvPair.Value.Name;
-			go.GetComponent<Renderer>().material.color = colors[Random.Range(0, colors.Count)];
-			go.name = kvPair.Value.ID.ToString();
-			float scale = Random.Range(0.85f, 1.15f);
-			go.transform.localScale = new Vector3(scale, scale, 1);
+			// Draw the enemies "home" system
+			if (kvPair.Value.IsEnemyHome) {
+				Sprite redStar = Resources.Load<Sprite>("ImportedImages/star_red_large");
+				go.GetComponent<SpriteRenderer>().sprite = redStar;
+				go.transform.localScale = new Vector3(1.5f, 1.5f, 1);
+			// Draw any other normal star.
+			} else {
+				go.GetComponent<Renderer>().material.color = colors[Random.Range(0, colors.Count)];
+				float scale = Random.Range(0.85f, 1.15f);
+				go.transform.localScale = new Vector3(scale, scale, 1);
+			}
 		}
 
 	}

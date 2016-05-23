@@ -27,6 +27,9 @@ public class GalaxySimulator : MonoBehaviour {
 	[SerializeField]
 	private GameObject _redStarPrefab;
 	[SerializeField]
+	private GameObject _yellowStarPrefab;
+
+	[SerializeField]
 	private float _forceReductionScale = 0.1f;
 
 	internal class HostilityGrowthObject {
@@ -79,6 +82,20 @@ public class GalaxySimulator : MonoBehaviour {
 			if (system.Hostility > HostilityAdvanceThreshold) {
 				UpdateHostility(system); 
 			}
+			if (system.Hostility > 0) {
+				SetHostilityIndicators(system);
+			}
+		}
+	}
+
+	private void SetHostilityIndicators(StarSystemData system) {
+
+		if (system.Hostility > system.SystemDefense) {
+			//A red star means the system is falling, or has fallen.
+			Instantiate(_redStarPrefab, system.GetPosition(), Quaternion.identity);
+		} else if (system.Hostility < system.SystemDefense) {
+			// A yellow star means the system is under attack, but not yet at risk of falling.
+			Instantiate(_yellowStarPrefab, system.GetPosition(), Quaternion.identity);
 		}
 	}
 
@@ -126,9 +143,6 @@ public class GalaxySimulator : MonoBehaviour {
 		float expansionValue = (system.Hostility - selectedSystem.Hostility) * 0.5f;
 
 		HostilityExpansions.Add(new HostilityGrowthObject(selectedSystem.ID, system.ID, expansionValue));
-
-		// Create a red star indicating it's being invaded.
-		Instantiate(_redStarPrefab, selectedSystem.GetPosition(), Quaternion.identity);
 
 	}
 
