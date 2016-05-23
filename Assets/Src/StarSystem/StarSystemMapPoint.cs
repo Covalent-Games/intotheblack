@@ -1,11 +1,15 @@
 ﻿using UnityEngine;
+using UnityEngine.Extensions;
+using UnityEngine.EventSystems;
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class StarSystemMapPoint : MonoBehaviour {
 
 	public Guid ID;
+	public Text SystemName;
 
 	private static StarSystemInfoDisplay _infoDisplay;
 	private static StarMapCameraController _camController;
@@ -21,6 +25,7 @@ public class StarSystemMapPoint : MonoBehaviour {
 		if (_camController == null) {
 			_camController = FindObjectOfType<StarMapCameraController>(); 
 		}
+		SystemName = transform.FindChildRecursive("SystemName").GetComponent<Text>();
 	}
 
 	public void OnMouseEnter() {
@@ -58,10 +63,12 @@ public class StarSystemMapPoint : MonoBehaviour {
 
 	public void OnMouseDown() {
 
-		if (!StarMapCameraController.CameraMoving) {
-			StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[ID];
-			_infoDisplay.SetTargettedSystemInfo(StarSystemData.StartSystemMapTable[ID]);
-			_camController.MoveCameraToSelected();
+		if (!EventSystem.current.IsPointerOverGameObject(0)) {
+			if (!StarMapCameraController.CameraMoving) {
+				StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[ID];
+				_infoDisplay.SetTargettedSystemInfo(StarSystemData.StartSystemMapTable[ID]);
+				_camController.MoveCameraToSelected();
+			} 
 		}
 	}
 }

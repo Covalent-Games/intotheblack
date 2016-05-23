@@ -4,23 +4,24 @@ using System.Collections.Generic;
 using System;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
+using Covalent.Generators;
 
 public class StarClusterGenerator : MonoBehaviour {
 
-	public int StarCount = 20;
+	[HideInInspector]
+	public bool GenerateNewMap = false;
+	public int StarCount = 50;
 	public float StarConenctionRange = 8f;
-	public float MinimumStarDistance = 3f;
+	public float MinimumStarDistance = 3.5f;
 	public Transform StarCluster;
 
 	[SerializeField]
 	private GameObject _starPrefab;
+	[SerializeField]
+	private AnimationCurve _hostilityDistanceCurve;
 	private int _currentStarCount;
 	private Queue<StarSystemData> _connectionQueue = new Queue<StarSystemData>();
-
-	private void Start() {
-
-		DrawStarMap();
-	}
+	private MarkovNameGenerator NameGenerator = new MarkovNameGenerator(MarkovNameGenerator.TempSampleData);
 
 	public void GenerateNewStarSystems() {
 
@@ -36,9 +37,10 @@ public class StarClusterGenerator : MonoBehaviour {
 			_currentStarCount += count;
 		}
 		ConnectNearbyStars();
+		GeneratePopulation();
 		SetHomeSystems();
 		SetHostilityRatings();
-		BuildSpaceStations();
+		SetSystemEconomies();
 		StarSystemData.Save();
 	}
 
@@ -49,9 +51,10 @@ public class StarClusterGenerator : MonoBehaviour {
 		bool useExistingStar = false;
 
 		for (int i = 0; i < numberOfConnections; i++) {
-			Debug.Log(Random.insideUnitCircle);
-			Debug.Log((Vector3)(Random.insideUnitCircle * Random.Range(-StarConenctionRange, StarConenctionRange)) + 
-				star.GetPosition());
+			//TODO: Make this work so that we're not generating stars in a square pattern.
+			//Debug.Log(Random.insideUnitCircle);
+			//Debug.Log((Vector3)(Random.insideUnitCircle * Random.Range(-StarConenctionRange, StarConenctionRange)) + 
+			//	star.GetPosition());
 			pos = new Vector3(
 				Random.Range(-StarConenctionRange, StarConenctionRange),
 				Random.Range(-StarConenctionRange, StarConenctionRange),
@@ -79,16 +82,14 @@ public class StarClusterGenerator : MonoBehaviour {
 				_currentStarCount--;
 			}
 			
-			
-			star.ConnectedSystems.Add(connectedStar.ID);
-			connectedStar.ConnectedSystems.Add(star.ID);
+			ConnectTwoStars(star, connectedStar);
 		}
 	}
 
 	private StarSystemData GenerateNewStar(Vector3 pos) {
 
 		StarSystemData star = new StarSystemData(
-			GeneratePopulation(0),
+			NameGenerator.GenerateName(),
 			Random.Range(.45f, .65f),
 			pos);
 		return star;
@@ -99,12 +100,21 @@ public class StarClusterGenerator : MonoBehaviour {
 		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
 			foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 				if (Vector3.Distance(star.GetPosition(), kvPair.Value.GetPosition()) <= StarConenctionRange * 0.75f) {
-					if (star != kvPair.Value && !star.ConnectedSystems.Contains(kvPair.Value.ID)) {
-						star.ConnectedSystems.Add(kvPair.Value.ID);
-						kvPair.Value.ConnectedSystems.Add(star.ID);
-					}
+					if (star == kvPair.Value) { continue; }
+					// At this point the two systems should be added to the other's connected system list if they
+					// are not already added.
+					ConnectTwoStars(star, kvPair.Value);
 				}
 			}
+		}
+	}
+
+	private void GeneratePopulation() {
+
+		int connectedCount = 0;
+		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
+			connectedCount = star.ConnectedSystems.Count;
+			star.Population = (int)Random.Range(Mathf.Exp(connectedCount/2) * 10000, Mathf.Exp(connectedCount/3) * 1000000);
 		}
 	}
 
@@ -145,24 +155,30 @@ public class StarClusterGenerator : MonoBehaviour {
 			StarSystemData.PlayerHome.GetPosition());
 
 		foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
-			data.Hostility = 1 - Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d;
+			data.Hostility = _hostilityDistanceCurve.Evaluate(
+				Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d);
 		}
 	}
 
-	private void BuildSpaceStations() {
+	private void SetSystemEconomies() {
 		
 		foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
 			float economicStateModifier = 0.5f + (data.ConnectedSystems.Count / 7f) * 0.5f;
-
-			//Debug.Log(string.Format("Connected systems: {0}, changed state of {1} with a modifier of {2} to {3}",
-			//	data.ConnectedSystems.Count,
-			//	data.EconomyState, economicStateModifier, data.EconomyState *= economicStateModifier));
 			data.EconomyState *= economicStateModifier;
-			data.AddStations();
 		}
 	}
 
-	private void DrawStarMap() {
+	private void ConnectTwoStars(StarSystemData star1, StarSystemData star2) {
+
+		if (!star1.ConnectedSystems.Contains(star2.ID)) {
+			star1.ConnectedSystems.Add(star2.ID);
+		}
+		if (!star2.ConnectedSystems.Contains(star1.ID)) {
+			star2.ConnectedSystems.Add(star1.ID);
+		}
+	}
+
+	public void DrawStarMap() {
 
 		Image backdropImage = GameObject.FindGameObjectWithTag("Backdrop").GetComponent<Image>();
 		Color[] pixels = ((Texture2D)backdropImage.mainTexture).GetPixels();
@@ -177,27 +193,18 @@ public class StarClusterGenerator : MonoBehaviour {
 			}
 		}
 
+		StarSystemMapPoint mapPoint;
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 			GameObject go = (GameObject)Instantiate(_starPrefab, kvPair.Value.GetPosition(), Quaternion.identity);;
 			go.transform.SetParent(StarCluster);
-			go.GetComponent<StarSystemMapPoint>().ID = kvPair.Value.ID;
+			mapPoint = go.GetComponent<StarSystemMapPoint>();
+			mapPoint.ID = kvPair.Value.ID;
+			mapPoint.SystemName.text = kvPair.Value.Name;
 			go.GetComponent<Renderer>().material.color = colors[Random.Range(0, colors.Count)];
 			go.name = kvPair.Value.ID.ToString();
 			float scale = Random.Range(0.85f, 1.15f);
 			go.transform.localScale = new Vector3(scale, scale, 1);
 		}
 
-	}
-
-	private int GeneratePopulation(int population) {
-
-		int add = Random.Range(1000, 1000000);
-		population += add;
-		
-		if (add > 500000) {
-			population += GeneratePopulation(population);
-		}
-
-		return population;
 	}
 }

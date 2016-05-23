@@ -62,19 +62,27 @@ public class StarSystemData {
 	public bool IsEnemyHome = false;
 	public string Name;
 	public List<Guid> ConnectedSystems = new List<Guid>();
-	public long Population;
+	public int Population;
 	public float PositionX;
 	public float PositionY;
-	public Dictionary<Guid, SpaceStation> IdToStations = new Dictionary<Guid, SpaceStation>();
+	private SpaceStationData _localSpaceStation;
+	public SpaceStationData LocalSpaceStation {
+		get {
+			if (_localSpaceStation == null) {
+				_localSpaceStation = new SpaceStationData();
+				Save();
+			}
+			return _localSpaceStation;
+		}
+	}
 
-	public StarSystemData(long population, float economy, Vector3 position) {
+	public StarSystemData(string name, float economy, Vector3 position) {
 
 		if (ID == Guid.Empty) {
 			ID = Guid.NewGuid();
 		}
 
-		Name = GenerateName();
-		Population = population;
+		Name = name;
 		EconomyState = economy;
 		PositionX = position.x;
 		PositionY = position.y;
@@ -82,24 +90,15 @@ public class StarSystemData {
 		StartSystemMapTable.Add(ID, this);
 	}
 
-	public void AddStations() {
+	public void InstantiateStation() {
 
-		if (IdToStations.Count > 0) {
-			Debug.LogError("Attempting to add stations twice to a system!");
-			return;
+		UnityEngine.Object prefab = Resources.Load("Prefabs/SpaceStation");
+		if (prefab == null) {
+			Debug.LogError("Prefab is null");
+			Debug.Break();
 		}
-
-		int stationCount = (int)Mathf.Clamp(Mathf.RoundToInt(EconomyState * 4), 1, Mathf.Infinity);
-		for (int i = 0; i < stationCount; i++) {
-			SpaceStation station = new SpaceStation();
-			IdToStations.Add(station.ID, station);
-		}
-	}
-
-	private string GenerateName() {
-
-		// Temporary...
-		return ID.ToString();
+		GameObject station = (GameObject)GameObject.Instantiate(prefab, LocalSpaceStation.Position, Quaternion.identity);
+		LocalSpaceStation.StationTransform = station.transform;
 	}
 
 	public static float GetTotalHostilityRating() {

@@ -15,7 +15,7 @@ public class GameStateData {
 	// ----------------------------------
 	public Guid PlayerOccupiedSystem;
 	public int TurnCount;
-
+	public bool ExpandHostility;
 	// ----------------------------------
 
 	/// <summary>
