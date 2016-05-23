@@ -16,6 +16,7 @@ public class GalaxySimulator : MonoBehaviour {
 			_hostilityAdvanceThreshold = Mathf.Clamp(value, 0f, 1f);
 		}
 	}
+	public ExpansionDot HostilityExpansionDotPrefab;
 
 	[SerializeField]
 	[Range(0f, 1f)]
@@ -38,6 +39,28 @@ public class GalaxySimulator : MonoBehaviour {
 			StarSystemTo = systemTo;
 			StarSystemFrom = systemFrom;
 			ChangeAmount = amount;
+		}
+	}
+
+	private void Awake() {
+
+		HostilityExpansionDotPrefab = Resources.Load<ExpansionDot>("Prefabs/HostilityExpansionDot");
+	}
+
+	private IEnumerator Start() {
+
+		float delay = 2.5f;
+		float timeSnapshot = Time.time;
+		while (enabled) {
+			if (Time.time - timeSnapshot >= delay) {
+				timeSnapshot = Time.time;
+				foreach(HostilityGrowthObject growth in HostilityExpansions) {
+					ExpansionDot dot = Instantiate(HostilityExpansionDotPrefab);
+					dot.To = StarSystemData.StartSystemMapTable[growth.StarSystemTo].GetPosition();
+					dot.transform.position = StarSystemData.StartSystemMapTable[growth.StarSystemFrom].GetPosition();
+				}
+			}
+			yield return null; 
 		}
 	}
 
@@ -96,8 +119,10 @@ public class GalaxySimulator : MonoBehaviour {
 		// If there were no elligible systems, return.
 		if (systemList.Count < 1) {	return;	}
 
+		//TODO: Expand to multiple systems if possible.
 		// Randomly choose ID from systemList and getStarSystemData from the table.
 		StarSystemData selectedSystem = StarSystemData.StartSystemMapTable[systemList[Random.Range(0, systemList.Count)]];
+		//TODO: Only expand with expendable resources. The aliens shouldn't put themselves in a losing situation.
 		float expansionValue = (system.Hostility - selectedSystem.Hostility) * 0.5f;
 
 		HostilityExpansions.Add(new HostilityGrowthObject(selectedSystem.ID, system.ID, expansionValue));
@@ -106,4 +131,5 @@ public class GalaxySimulator : MonoBehaviour {
 		Instantiate(_redStarPrefab, selectedSystem.GetPosition(), Quaternion.identity);
 
 	}
+
 }

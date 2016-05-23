@@ -12,7 +12,6 @@ public class StarMapSceneManager : MonoBehaviour {
 
 	private void Awake() {
 
-		//_hostilityManager = GetComponent<HostilityManager>();
 		_galaxySimulator = GetComponent<GalaxySimulator>();
 
 		GameManager.LoadGame();
