@@ -38,13 +38,13 @@ public class StarSystemData {
 			return _enemyHome;
 		}
 	}
-	private float _economyState;
-	public float EconomyState {
+	private float _prosperity;
+	public float Prosperity {
 		get {
-			return _economyState;
+			return _prosperity;
 		} 
 		set {
-			_economyState = Mathf.Clamp(value, 0f, 1f);
+			_prosperity = Mathf.Clamp(value, 0f, 1f);
 		}
 	}
 	private float _hostility;
@@ -54,6 +54,15 @@ public class StarSystemData {
 		}
 		set	{
 			_hostility = Mathf.Clamp(value, 0f, 1f);
+		}
+	}
+	private float _systemDefense;
+	public float SystemDefense {
+		get {
+			return _systemDefense;
+		}
+		set {
+			_systemDefense = Mathf.Clamp(value, 0f, 1f);
 		}
 	}
 
@@ -83,7 +92,7 @@ public class StarSystemData {
 		}
 
 		Name = name;
-		EconomyState = economy;
+		Prosperity = economy;
 		PositionX = position.x;
 		PositionY = position.y;
 

@@ -15,7 +15,7 @@ public class StarMapCameraController : MonoBehaviour {
 	[SerializeField]
 	private float _maximumZoom = 20f;
 
-	void Start() {
+	public void SetCameraToCurrentSystem() {
 
 		if (GameStateData.State.PlayerOccupiedSystem != Guid.Empty) {
 			StarMapSceneManager.SystemSelected = StarSystemData.StartSystemMapTable[GameStateData.State.PlayerOccupiedSystem];

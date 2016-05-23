@@ -25,6 +25,8 @@ public class GalaxySimulator : MonoBehaviour {
 	private int MaxSystemPopulation = 1000000000; // 1 Billion
 	[SerializeField]
 	private GameObject _redStarPrefab;
+	[SerializeField]
+	private float _forceReductionScale = 0.1f;
 
 	internal class HostilityGrowthObject {
 
@@ -50,10 +52,20 @@ public class GalaxySimulator : MonoBehaviour {
 		StarSystemData system;
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 			system = kvPair.Value;
+			LowerForces(system);
 			if (system.Hostility > HostilityAdvanceThreshold) {
 				UpdateHostility(system); 
 			}
 		}
+	}
+
+	private void LowerForces(StarSystemData system) {
+
+		float hostility = system.Hostility;
+		float defense = system.SystemDefense;
+		// Lower each force by 10% of the opposing forces starting value. 
+		system.Hostility -= defense * _forceReductionScale;
+		system.SystemDefense -= hostility * _forceReductionScale;
 	}
 
 	private void ExpandHostility(List<HostilityGrowthObject> hostilityExpansions) {
@@ -76,11 +88,12 @@ public class GalaxySimulator : MonoBehaviour {
 	private void UpdateHostility(StarSystemData system) {
 
 		//TODO: Check if the system defense is low enough to expand out.
-
+		if (system.Hostility <= system.SystemDefense) { return; }
 		// Get a list of systems with hostility lower than the local system.Hostility.
 		List<Guid> systemList = system.ConnectedSystems
 			.Where(s => StarSystemData.StartSystemMapTable[s].Hostility < system.Hostility).ToList();
 
+		// If there were no elligible systems, return.
 		if (systemList.Count < 1) {	return;	}
 
 		// Randomly choose ID from systemList and getStarSystemData from the table.

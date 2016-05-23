@@ -8,6 +8,13 @@ using Covalent.Generators;
 
 public class StarClusterGenerator : MonoBehaviour {
 
+	public static float MinimumPopulation {
+		get {
+			return Mathf.Exp(1f / 3f) * 10000;
+		}
+	}
+	public static float MaximumPopulation = 2000000;
+
 	[HideInInspector]
 	public bool GenerateNewMap = false;
 	public int StarCount = 50;
@@ -40,7 +47,7 @@ public class StarClusterGenerator : MonoBehaviour {
 		GeneratePopulation();
 		SetHomeSystems();
 		SetHostilityRatings();
-		SetSystemEconomies();
+		SetSystemProsperity();
 		StarSystemData.Save();
 	}
 
@@ -111,11 +118,10 @@ public class StarClusterGenerator : MonoBehaviour {
 
 	private void GeneratePopulation() {
 
-		int connectedCount = 0;
 		foreach (StarSystemData star in StarSystemData.StartSystemMapTable.Values) {
-			connectedCount = star.ConnectedSystems.Count;
-
-			star.Population = (int)Random.Range(Mathf.Exp(connectedCount/3f) * 10000, Mathf.Exp(connectedCount/2f) * 1000000);
+			star.Population = (int)Random.Range(
+				Mathf.Exp(star.ConnectedSystems.Count / 3f) * 10000,
+				Mathf.Exp(star.ConnectedSystems.Count / 2f) * 1000000);
 		}
 	}
 
@@ -144,8 +150,8 @@ public class StarClusterGenerator : MonoBehaviour {
 		}
 		home.IsPlayerHome = true;
 		enemyHome.Hostility = 1f;
-		enemyHome.EconomyState -= .25f;
-		home.EconomyState += .25f;
+		enemyHome.Prosperity -= .25f;
+		home.Prosperity += .25f;
 		home.Hostility = 0f;
 	}
 
@@ -161,11 +167,13 @@ public class StarClusterGenerator : MonoBehaviour {
 		}
 	}
 
-	private void SetSystemEconomies() {
+	private void SetSystemProsperity() {
 		
-		foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
-			float economicStateModifier = 0.5f + (data.ConnectedSystems.Count / 7f) * 0.5f;
-			data.EconomyState *= economicStateModifier;
+		foreach (StarSystemData system in StarSystemData.StartSystemMapTable.Values) {
+			float economicStateModifier = 0.5f + (system.ConnectedSystems.Count / 7f) * 0.5f;
+			system.Prosperity *= economicStateModifier;
+			// While we're at it we'll set the Defense Forces to 1.
+			system.SystemDefense = 1f;
 		}
 	}
 

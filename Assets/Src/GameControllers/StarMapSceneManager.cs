@@ -25,6 +25,7 @@ public class StarMapSceneManager : MonoBehaviour {
 
 		_galaxySimulator.UpdateGalaxy();
 		SystemGenerator.DrawStarMap();
+		Camera.main.GetComponent<StarMapCameraController>().SetCameraToCurrentSystem();
 	}
 
 	public void JumpToSystem() {
@@ -34,5 +35,15 @@ public class StarMapSceneManager : MonoBehaviour {
 		GameStateData.State.ExpandHostility = true;
 		GameManager.SaveGame();
 		Application.LoadLevel("SystemLevel");
+	}
+
+	public void StepSimulation() {
+
+		RedStar[] redStars = GameObject.FindObjectsOfType<RedStar>();
+		foreach (RedStar star in redStars) {
+			Destroy(star.gameObject);
+		}
+		_galaxySimulator.UpdateGalaxy();
+		Camera.main.GetComponent<StarMapCameraController>().SetCameraToCurrentSystem();
 	}
 }
