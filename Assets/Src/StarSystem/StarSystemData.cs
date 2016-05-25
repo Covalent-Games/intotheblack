@@ -85,6 +85,11 @@ public class StarSystemData {
 		}
 	}
 
+	public static StarSystemData GetSystem(Guid id) {
+
+		return StarSystemData.StartSystemMapTable[id];
+	}
+
 	public StarSystemData(string name, float economy, Vector3 position) {
 
 		if (ID == Guid.Empty) {

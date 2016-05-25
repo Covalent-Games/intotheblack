@@ -157,14 +157,16 @@ public class StarClusterGenerator : MonoBehaviour {
 
 	private void SetHostilityRatings() {
 
-		float d = Vector3.Distance(
-			StarSystemData.EnemyHome.GetPosition(), 
-			StarSystemData.PlayerHome.GetPosition());
+		//float d = Vector3.Distance(
+		//	StarSystemData.EnemyHome.GetPosition(), 
+		//	StarSystemData.PlayerHome.GetPosition());
 
-		foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
-			data.Hostility = _hostilityDistanceCurve.Evaluate(
-				Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d);
-		}
+		//foreach (StarSystemData data in StarSystemData.StartSystemMapTable.Values) {
+		//	data.Hostility = _hostilityDistanceCurve.Evaluate(
+		//		Vector3.Distance(data.GetPosition(), StarSystemData.EnemyHome.GetPosition()) / d);
+		//}
+		StarSystemData.EnemyHome.Hostility = 1f;
+		StarSystemData.GetSystem(StarSystemData.EnemyHome.ConnectedSystems[0]).Hostility = 0.5f;
 	}
 
 	private void SetSystemProsperity() {

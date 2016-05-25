@@ -103,13 +103,15 @@ public class GalaxySimulator : MonoBehaviour {
 
 		float hostility = system.Hostility;
 		float defense = system.SystemDefense;
-		// Lower each force by 10% of the opposing forces starting value. 
-		system.Hostility -= defense * _forceReductionScale;
-		system.SystemDefense -= hostility * _forceReductionScale;
+		// Lower each force by 8-12% of the opposing forces starting value
+		system.Hostility -= defense * (_forceReductionScale + Random.Range(-0.02f, 0.02f));
+		system.SystemDefense -= hostility * (_forceReductionScale + Random.Range(-0.02f, 0.02f));
 	}
 
 	private void ExpandHostility(List<HostilityGrowthObject> hostilityExpansions) {
 
+		//TODO: Check that the resources are still available before changing. For instance, if the player
+		// reduces the "from" system's hostility they should thwart the expansion. 
 		for (int i = 0; i < hostilityExpansions.Count; i++) {
 			StarSystemData.StartSystemMapTable[hostilityExpansions[i].StarSystemTo].Hostility
 				+= hostilityExpansions[i].ChangeAmount;
@@ -127,23 +129,42 @@ public class GalaxySimulator : MonoBehaviour {
 
 	private void UpdateHostility(StarSystemData system) {
 
-		//TODO: Check if the system defense is low enough to expand out.
-		if (system.Hostility <= system.SystemDefense) { return; }
-		// Get a list of systems with hostility lower than the local system.Hostility.
-		List<Guid> systemList = system.ConnectedSystems
-			.Where(s => StarSystemData.StartSystemMapTable[s].Hostility < system.Hostility).ToList();
+		//Only expand if the enemy has available resources.
+		if (system.Hostility > system.SystemDefense) {
+			float availableResources = system.Hostility - system.SystemDefense;
 
-		// If there were no elligible systems, return.
-		if (systemList.Count < 1) {	return;	}
+			// Get a list of systems with hostility lower than the local system.Hostility.
+			List<Guid> systemList = system.ConnectedSystems
+				.Where(s => StarSystemData.StartSystemMapTable[s].Hostility < system.Hostility).ToList();
 
-		//TODO: Expand to multiple systems if possible.
-		// Randomly choose ID from systemList and getStarSystemData from the table.
-		StarSystemData selectedSystem = StarSystemData.StartSystemMapTable[systemList[Random.Range(0, systemList.Count)]];
-		//TODO: Only expand with expendable resources. The aliens shouldn't put themselves in a losing situation.
-		float expansionValue = (system.Hostility - selectedSystem.Hostility) * 0.5f;
+			// If there were no elligible systems, return.
+			if (systemList.Count < 1) { return; }
 
-		HostilityExpansions.Add(new HostilityGrowthObject(selectedSystem.ID, system.ID, expansionValue));
+			//TODO: Expand to multiple systems if possible.
+			//StarSystemData selectedSystem = StarSystemData.StartSystemMapTable[systemList[Random.Range(0, systemList.Count)]];
+			StarSystemData selectedSystem = null;
+			StarSystemData comparedSystem = null;
+			for (int i = 0; i < system.ConnectedSystems.Count; i++) {
+				comparedSystem = StarSystemData.GetSystem(system.ConnectedSystems[i]);
+				//Find a system that would be placed in an advantageous position with this system's enemy's spare resources.
+				if (comparedSystem.SystemDefense - comparedSystem.Hostility > 0) {
+					if (comparedSystem.SystemDefense - comparedSystem.Hostility <= availableResources) {
+						selectedSystem = comparedSystem;
+						Debug.Log(selectedSystem.Name + " is getting vital backup!");
+						break;
+					}
+				}
+			}
+			//If we're here, then no nearby systems would *immediately* benefit from advancement.
+			//With this logic the enemy is "playing it safe".
+			if (selectedSystem == null) {
+				//At this point the enemy should still advance, so just pick a random system.
+				selectedSystem = StarSystemData.GetSystem(systemList[Random.Range(0, systemList.Count)]);
+			}
+			//TODO: Divided by number of expansions from this system
+			float expansionValue = (availableResources - selectedSystem.Hostility);
 
+			HostilityExpansions.Add(new HostilityGrowthObject(selectedSystem.ID, system.ID, expansionValue));
+		}
 	}
-
 }
