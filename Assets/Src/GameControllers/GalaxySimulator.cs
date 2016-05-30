@@ -7,7 +7,7 @@ using System.Linq;
 
 public class GalaxySimulator : MonoBehaviour {
 
-	internal static List<HostilityGrowthObject> HostilityExpansions = new List<HostilityGrowthObject>();
+	internal static Dictionary<Guid, HostilityGrowthObject> HostilityExpansions = new Dictionary<Guid, HostilityGrowthObject>();
 	public float HostilityAdvanceThreshold {
 		get {
 			return _hostilityAdvanceThreshold;
@@ -34,14 +34,12 @@ public class GalaxySimulator : MonoBehaviour {
 
 	internal class HostilityGrowthObject {
 
-		public Guid StarSystemTo;
+		public Dictionary<Guid, float> ChangeList;
 		public Guid StarSystemFrom;
-		public float ChangeAmount;
 
-		public HostilityGrowthObject(Guid systemTo, Guid systemFrom, float amount) {
-			StarSystemTo = systemTo;
+		public HostilityGrowthObject(Guid systemFrom) {
 			StarSystemFrom = systemFrom;
-			ChangeAmount = amount;
+			ChangeList = new Dictionary<Guid, float>();
 		}
 	}
 
@@ -57,10 +55,12 @@ public class GalaxySimulator : MonoBehaviour {
 		while (enabled) {
 			if (Time.time - timeSnapshot >= delay) {
 				timeSnapshot = Time.time;
-				foreach(HostilityGrowthObject growth in HostilityExpansions) {
-					ExpansionDot dot = Instantiate(HostilityExpansionDotPrefab);
-					dot.To = StarSystemData.StartSystemMapTable[growth.StarSystemTo].GetPosition();
-					dot.transform.position = StarSystemData.StartSystemMapTable[growth.StarSystemFrom].GetPosition();
+				foreach (var kvPair in HostilityExpansions) {
+					foreach (var growthPair in kvPair.Value.ChangeList) {
+						ExpansionDot dot = Instantiate(HostilityExpansionDotPrefab);
+						dot.To = StarSystemData.StartSystemMapTable[growthPair.Key].GetPosition();
+						dot.transform.position = StarSystemData.StartSystemMapTable[kvPair.Key].GetPosition();
+					}
 				}
 			}
 			yield return null; 
@@ -70,11 +70,8 @@ public class GalaxySimulator : MonoBehaviour {
 	public void UpdateGalaxy() {
 
 		if (HostilityExpansions.Count > 0) {
-			ExpandHostility(HostilityExpansions);
+			ExpandHostility();
 		}
-		// Keep the enemy base at 100% hostility to feed the other systems.
-		StarSystemData.EnemyHome.Hostility = 1f;
-		Debug.Log("Set the EnemyHome hostility to 1");
 		StarSystemData system;
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 			system = kvPair.Value;
@@ -86,6 +83,9 @@ public class GalaxySimulator : MonoBehaviour {
 				SetHostilityIndicators(system);
 			}
 		}
+		// Keep the enemy base at 100% hostility to feed the other systems.
+		StarSystemData.EnemyHome.Hostility = 1f;
+		Debug.Log("Set the EnemyHome hostility to 1");
 	}
 
 	private void SetHostilityIndicators(StarSystemData system) {
@@ -108,23 +108,23 @@ public class GalaxySimulator : MonoBehaviour {
 		system.SystemDefense -= hostility * (_forceReductionScale + Random.Range(-0.02f, 0.02f));
 	}
 
-	private void ExpandHostility(List<HostilityGrowthObject> hostilityExpansions) {
+	private void ExpandHostility() {
 
 		//TODO: Check that the resources are still available before changing. For instance, if the player
 		// reduces the "from" system's hostility they should thwart the expansion. 
-		for (int i = 0; i < hostilityExpansions.Count; i++) {
-			StarSystemData.StartSystemMapTable[hostilityExpansions[i].StarSystemTo].Hostility
-				+= hostilityExpansions[i].ChangeAmount;
-			StarSystemData.StartSystemMapTable[hostilityExpansions[i].StarSystemFrom].Hostility
-				-= hostilityExpansions[i].ChangeAmount;
-			//TODO: This is a bad way to do it, but the "good" way isn't working, and it's really only bad
-			// out of principle.
-			if (StarSystemData.StartSystemMapTable[hostilityExpansions[i].StarSystemFrom].IsEnemyHome) {
-				Debug.Log("Setting enemy base to 1 hostility \"the bad way\".");
-				StarSystemData.StartSystemMapTable[hostilityExpansions[i].StarSystemFrom].Hostility = 1f;
+		StarSystemData fromSystem;
+		foreach (var kvPair in HostilityExpansions) {
+			fromSystem = StarSystemData.StartSystemMapTable[kvPair.Key];
+			foreach (var growthPair in kvPair.Value.ChangeList) {
+				StarSystemData.StartSystemMapTable[growthPair.Key].Hostility += growthPair.Value;
+				fromSystem.Hostility -= growthPair.Value;
+			}
+
+			if (fromSystem.IsEnemyHome) {
+				fromSystem.Hostility = 1f;
 			}
 		}
-		hostilityExpansions.Clear();
+		HostilityExpansions = new Dictionary<Guid, HostilityGrowthObject>();
 	}
 
 	private void UpdateHostility(StarSystemData system) {
@@ -140,8 +140,7 @@ public class GalaxySimulator : MonoBehaviour {
 			// If there were no elligible systems, return.
 			if (systemList.Count < 1) { return; }
 
-			//TODO: Expand to multiple systems if possible.
-			//StarSystemData selectedSystem = StarSystemData.StartSystemMapTable[systemList[Random.Range(0, systemList.Count)]];
+			//TODO: Expand to multiple systems if possible, but don't overlap.
 			StarSystemData selectedSystem = null;
 			StarSystemData comparedSystem = null;
 			for (int i = 0; i < system.ConnectedSystems.Count; i++) {
@@ -163,8 +162,10 @@ public class GalaxySimulator : MonoBehaviour {
 			}
 			//TODO: Divided by number of expansions from this system
 			float expansionValue = (availableResources - selectedSystem.Hostility);
+			HostilityGrowthObject growth = new HostilityGrowthObject(system.ID);
+			growth.ChangeList.Add(selectedSystem.ID, expansionValue);
 
-			HostilityExpansions.Add(new HostilityGrowthObject(selectedSystem.ID, system.ID, expansionValue));
+			HostilityExpansions.Add(system.ID, growth);
 		}
 	}
 }
