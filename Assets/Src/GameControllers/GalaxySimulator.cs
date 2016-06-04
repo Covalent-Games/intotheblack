@@ -7,6 +7,9 @@ using System.Linq;
 
 public class GalaxySimulator : MonoBehaviour {
 
+	/// <summary>
+	/// Key: Id of system to expand from. Value: Object representing systems expanded to.
+	/// </summary>
 	internal static Dictionary<Guid, HostilityGrowthObject> HostilityExpansions = new Dictionary<Guid, HostilityGrowthObject>();
 	public float HostilityAdvanceThreshold {
 		get {
@@ -75,8 +78,8 @@ public class GalaxySimulator : MonoBehaviour {
 		StarSystemData system;
 		foreach (var kvPair in StarSystemData.StartSystemMapTable) {
 			system = kvPair.Value;
-			LowerForces(system);
-			if (system.Hostility > HostilityAdvanceThreshold) {
+			LowerForcesPostTurn(system);
+			if (system.Hostility > HostilityAdvanceThreshold | (system.Hostility > 0 && system.SystemDefense == 0)) {
 				UpdateHostility(system); 
 			}
 			if (system.Hostility > 0) {
@@ -85,9 +88,12 @@ public class GalaxySimulator : MonoBehaviour {
 		}
 		// Keep the enemy base at 100% hostility to feed the other systems.
 		StarSystemData.EnemyHome.Hostility = 1f;
-		Debug.Log("Set the EnemyHome hostility to 1");
 	}
 
+	/// <summary>
+	/// Set colored stars behind system stars to indicate their state in the war.
+	/// </summary>
+	/// <param name="system"></param>
 	private void SetHostilityIndicators(StarSystemData system) {
 
 		if (system.Hostility > system.SystemDefense) {
@@ -99,7 +105,11 @@ public class GalaxySimulator : MonoBehaviour {
 		}
 	}
 
-	private void LowerForces(StarSystemData system) {
+	/// <summary>
+	/// Lowers both system forces and hostility by a weighted 10%.
+	/// </summary>
+	/// <param name="system"></param>
+	private void LowerForcesPostTurn(StarSystemData system) {
 
 		float hostility = system.Hostility;
 		float defense = system.SystemDefense;
@@ -108,6 +118,9 @@ public class GalaxySimulator : MonoBehaviour {
 		system.SystemDefense -= hostility * (_forceReductionScale + Random.Range(-0.02f, 0.02f));
 	}
 
+	/// <summary>
+	/// Expands hostility if any HostilityGrowthObjects are present
+	/// </summary>
 	private void ExpandHostility() {
 
 		//TODO: Check that the resources are still available before changing. For instance, if the player
@@ -133,32 +146,83 @@ public class GalaxySimulator : MonoBehaviour {
 		if (system.Hostility > system.SystemDefense) {
 			float availableResources = system.Hostility - system.SystemDefense;
 
+			Dictionary<StarSystemData, int> priorityTable = new Dictionary<StarSystemData, int>();
+			foreach (Guid systemId in system.ConnectedSystems) {
+				if (StarSystemData.StartSystemMapTable[systemId].Hostility < system.Hostility) {
+					priorityTable.Add(StarSystemData.StartSystemMapTable[systemId], 0);
+				}
+			}
+
 			// Get a list of systems with hostility lower than the local system.Hostility.
-			List<Guid> systemList = system.ConnectedSystems
-				.Where(s => StarSystemData.StartSystemMapTable[s].Hostility < system.Hostility).ToList();
+			//List<Guid> systemList = system.ConnectedSystems
+			//	.Where(s => StarSystemData.StartSystemMapTable[s].Hostility < system.Hostility).ToList();
 
 			// If there were no elligible systems, return.
-			if (systemList.Count < 1) { return; }
+			if (priorityTable.Count < 1) { return; }
 
 			//TODO: Expand to multiple systems if possible, but don't overlap.
 			StarSystemData selectedSystem = null;
 			StarSystemData comparedSystem = null;
-			for (int i = 0; i < system.ConnectedSystems.Count; i++) {
-				comparedSystem = StarSystemData.GetSystem(system.ConnectedSystems[i]);
-				//Find a system that would be placed in an advantageous position with this system's enemy's spare resources.
+			List<StarSystemData> systemPriorityKeys = new List<StarSystemData>(priorityTable.Keys);
+			//Find a system that would be placed in an advantageous position with this system's enemy's spare resources.
+			foreach (StarSystemData systemPriorityKey in systemPriorityKeys) {
+				comparedSystem = systemPriorityKey;
+				// Zero war activity and the system is conquered. 
+				if (comparedSystem.SystemDefense == 0 && comparedSystem.Hostility == 0) {
+					priorityTable[systemPriorityKey] -= 1;
+				}
+				// Zero war activity and the system has never been invaded.
+				if (comparedSystem.SystemDefense == 1f && comparedSystem.Hostility == 0f) {
+					priorityTable[systemPriorityKey] -= 1;
+				}
+				//Check if the neighboring system forces are 'winning'.
 				if (comparedSystem.SystemDefense - comparedSystem.Hostility > 0) {
+					priorityTable[systemPriorityKey] += 2;
+					//Check if this system's hostility resources can bring the neighboring hostility ahead.
 					if (comparedSystem.SystemDefense - comparedSystem.Hostility <= availableResources) {
-						selectedSystem = comparedSystem;
-						Debug.Log(selectedSystem.Name + " is getting vital backup!");
-						break;
+						priorityTable[systemPriorityKey] += 3;
+					}
+				}
+				foreach (var expandingFromPair in HostilityExpansions) {
+					////If true, we can backfill an expanding system.
+					//if (expandingFromPair.Key == comparedSystem.ID) {
+					//	float expansionAmount = expandingFromPair.Value.ChangeList.Values.Sum();
+					//	if (expansionAmount <= availableResources) {
+					//		HostilityGrowthObject backfill = new HostilityGrowthObject(system.ID);
+					//		backfill.ChangeList.Add(expandingFromPair.Key, availableResources - expansionAmount);
+					//		HostilityExpansions.Add(system.ID, backfill);
+					//		//TODO: This WHOLE block of logic needs to be ran first as the reduction of
+					//		// resources COMPLETELY ruins the priority system. D:
+					//		availableResources -= expansionAmount;
+					//	}
+					//}
+					foreach (var growthPair in expandingFromPair.Value.ChangeList) {
+						// If true, then this system already has backup on the way.
+						if (comparedSystem.ID == growthPair.Key) {
+							priorityTable[systemPriorityKey] -= 2;
+						}
 					}
 				}
 			}
+			KeyValuePair<StarSystemData, int> highestPriority = priorityTable.First();
+			foreach (var systemPriorityPair in priorityTable) {
+				if (systemPriorityPair.Value > highestPriority.Value) {
+					highestPriority = systemPriorityPair;
+				}
+			}
+			selectedSystem = highestPriority.Key;
+			Debug.Log(system.Name + " ===============");
+			foreach(var kvp in priorityTable) {
+				Debug.Log(kvp.Key.Name + " " + kvp.Value);
+			}
+			Debug.Log("SELECTED: " + selectedSystem.Name);
 			//If we're here, then no nearby systems would *immediately* benefit from advancement.
 			//With this logic the enemy is "playing it safe".
 			if (selectedSystem == null) {
+				//TODO: This is flawed logic in practice and should get phased out. Logically if there's no
+				// good place to expand to, don't.
 				//At this point the enemy should still advance, so just pick a random system.
-				selectedSystem = StarSystemData.GetSystem(systemList[Random.Range(0, systemList.Count)]);
+				selectedSystem = priorityTable.Keys.ToArray()[Random.Range(0, priorityTable.Count)];
 			}
 			//TODO: Divided by number of expansions from this system
 			float expansionValue = (availableResources - selectedSystem.Hostility);
