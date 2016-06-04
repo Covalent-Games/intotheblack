@@ -32,6 +32,10 @@ public class UserInputController : MonoBehaviour {
 				_shipWeapons.ActivateShield();
 			}
 		}
+
+		if (Input.GetKeyDown(KeyCode.Alpha0)) {
+			ComponentResources.DeployShield(GameManager.Player.GetComponent<Destructable>().ShieldComponent);
+		}
 	}
 
 	void FixedUpdate() {

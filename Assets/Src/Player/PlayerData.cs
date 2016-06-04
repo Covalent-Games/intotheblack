@@ -80,6 +80,12 @@ public class PlayerData {
 		}
 	}
 
+	public Component PrimaryWeaponComponent;
+	public Component SecondaryWeaponComponent;
+	public Component ShieldComponent;
+	public Component HullComponent;
+	public Component EngineComponent;
+
 	private int _startingLevel = 1;
 	private int _startingExperience = 0;
 	private int _startingScore = 0;
@@ -139,7 +145,8 @@ public class PlayerData {
 	}
 
 	public static void Save() {
-
+		if (_state == null)
+			_state = new PlayerData();
 		DataSerializer.SerializeData(_state, FilePaths.PlayerStatePath);
 	}
 
