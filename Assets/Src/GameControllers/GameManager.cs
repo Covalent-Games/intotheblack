@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour {
 	public static GameObject Player;
 	public static GameManager Instance;
 	public static Player PlayerObject;
+	public AsteroidSpawner AsteroidSpawner;
 	public GameObject[] ComponentPrefabs = new GameObject[5];
 	//public static int PlayerLevel = 1;
 	//private static int _playerExperience;
@@ -46,22 +47,9 @@ public class GameManager : MonoBehaviour {
 	public OverlayUI OverlayUI;
 	private float minSpawnDelay = 3f;
 	private float maxSpawnDelay = 11f;
-	private GameObject _asteroidPrefab;
-	private List<GameObject> _asteroidList = new List<GameObject>();
 
 	[SerializeField]
 	private Transform ProjectileContainer;
-
-
-	//private static void LevelUp() {
-
-	//	int remaining = _playerExperience - ExperienceToLevel;
-	//	_playerExperience = remaining;
-	//	ExperienceToLevel = Mathf.RoundToInt(ExperienceToLevel * 1.5f);
-	//	PlayerLevel++;
-	//	Instance.UpgradePoints++;
-	//	Instance.OverlayUI.DisplayMessage("You have leveled up! (Press ESC to Upgrade)");
-	//}
 
 	private void Awake() {
 
@@ -74,7 +62,7 @@ public class GameManager : MonoBehaviour {
 
 		StarSystemData.StarSystemLoaded.InstantiateStation();
 		_enemyPrefab = (GameObject)Resources.Load("Prefabs/EnemyShip");
-		_asteroidPrefab = (GameObject)Resources.Load("Prefabs/Asteroid");
+		
 		Player = GameObject.FindGameObjectWithTag("Player");
 		OverlayUI = GetComponent<OverlayUI>();
 		OverlayUI.Manager = this;
@@ -94,72 +82,10 @@ public class GameManager : MonoBehaviour {
 
 		StartCoroutine(SpawnEnemyShipsRoutine());
 		//StartCoroutine(SpawnObjectiveRoutine());
-		StartCoroutine(SpawnAsteroidRoutine());
+		StartCoroutine(AsteroidSpawner.SpawnAsteroidRoutine());
 	}
 
-	private IEnumerator SpawnAsteroidRoutine() {
-
-		float previousSize = 1f;
-		float waitTime = 2f;
-
-		while (gameObject.activeSelf) {
-			yield return new WaitForSeconds(Random.Range(waitTime, waitTime + 2));
-			GameObject roid = GetNextAsteroid();
-			Vector3 heading = Player.transform.up * 2f;
-			if (heading.x < 1 && heading.x > 0 && heading.y < 1 && heading.y > 0) {
-				heading.x += 1;
-			}
-			Vector3 spawnPos = Camera.main.ViewportToWorldPoint(new Vector3(
-				Random.Range(heading.x-0.5f, heading.x+0.5f),
-				Random.Range(heading.y-0.5f, heading.y+0.5f),
-				-Camera.main.transform.position.z));
-			roid.transform.position = spawnPos;
-			Rigidbody2D rb = roid.GetComponent<Rigidbody2D>();
-			rb.velocity = new Vector3(Random.value, Random.value, 0) * Random.Range(1f, 2f);
-			rb.angularVelocity = Random.value;
-			float scale = Mathf.Clamp(Random.Range(previousSize - .85f, previousSize + .2f), .1f, 5f);
-			roid.transform.localScale = new Vector3(scale, scale);
-			rb.mass = roid.transform.localScale.magnitude;
-			roid.SetActive(true);
-
-			if (Random.value > 0.09f) {
-				previousSize = roid.transform.localScale.x;
-			} else {
-				previousSize = Random.Range(.1f, 4f);
-			}
-			waitTime = previousSize * (previousSize * 0.5f);
-			CleanOldAsteroids();
-		}
-	}
-
-	private void CleanOldAsteroids() {
-
-		GameObject roid;
-		for (int i = 0; i < _asteroidList.Count; i++) {
-			if (_asteroidList[i].activeSelf) {
-				roid = _asteroidList[i];
-				if (Vector3.Distance(roid.transform.position, Player.transform.position) > 100) {
-					roid.SetActive(false);
-				}
-			}
-		}
-	}
-
-	private GameObject GetNextAsteroid() {
-
-		GameObject roid = null;
-		for (int i = 0; i < _asteroidList.Count; i++) {
-			if (!_asteroidList[i].activeSelf) {
-				roid = _asteroidList[i];
-				break;
-			}
-		}
-		if (roid == null) {
-			roid = Instantiate(_asteroidPrefab);
-			_asteroidList.Add(roid);
-		}
-		return roid;
-	}
+	
 
 	private IEnumerator SpawnEnemyShipsRoutine() {
 

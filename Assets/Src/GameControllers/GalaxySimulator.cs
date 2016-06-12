@@ -211,11 +211,11 @@ public class GalaxySimulator : MonoBehaviour {
 				}
 			}
 			selectedSystem = highestPriority.Key;
-			Debug.Log(system.Name + " ===============");
-			foreach(var kvp in priorityTable) {
-				Debug.Log(kvp.Key.Name + " " + kvp.Value);
-			}
-			Debug.Log("SELECTED: " + selectedSystem.Name);
+			//Debug.Log(system.Name + " ===============");
+			//foreach(var kvp in priorityTable) {
+			//	Debug.Log(kvp.Key.Name + " " + kvp.Value);
+			//}
+			//Debug.Log("SELECTED: " + selectedSystem.Name);
 			//If we're here, then no nearby systems would *immediately* benefit from advancement.
 			//With this logic the enemy is "playing it safe".
 			if (selectedSystem == null) {
